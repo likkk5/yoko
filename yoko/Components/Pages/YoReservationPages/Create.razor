@@ -34,11 +34,17 @@
                 <InputText id="roomnumber" @bind-Value="YoReservation.RoomNumber" class="form-control" /> 
                 <ValidationMessage For="() => YoReservation.RoomNumber" class="text-danger" /> 
             </div>        
-            @* <div class="mb-3">
+            <div class="mb-3">
                 <label for="reservationstatus" class="form-label">ReservationStatus:</label> 
-                <InputText id="reservationstatus" @bind-Value="YoReservation.ReservationStatus" class="form-control" /> 
+                <InputSelect id="reservationstatus" @bind-Value="YoReservation.ReservationStatus" class="form-select">
+                    @foreach (var item in Enum.GetValues(typeof(ReservationStatus)))
+                    {
+
+                        <option value="@item">@item</option>
+                    }
+                </InputSelect>
                 <ValidationMessage For="() => YoReservation.ReservationStatus" class="text-danger" /> 
-            </div>  *@       
+            </div>        
             <div class="mb-3">
                 <label for="cost" class="form-label">Cost:</label> 
                 <InputNumber id="cost" @bind-Value="YoReservation.Cost" class="form-control" /> 
