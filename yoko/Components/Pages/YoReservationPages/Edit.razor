@@ -1,0 +1,116 @@
+﻿@page "/YoReservations/edit"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h4>YoReservation</h4>
+<hr />
+@if (YoReservation is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="YoReservation" OnValidSubmit="UpdateYoReservation" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <input type="hidden" name="YoReservation.Id" value="@YoReservation.Id" />
+                <div class="mb-3">
+                    <label for="reservationdate" class="form-label">ReservationDate:</label>
+                    <InputDate id="reservationdate" @bind-Value="YoReservation.ReservationDate" class="form-control" />
+                    <ValidationMessage For="() => YoReservation.ReservationDate" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="checkindate" class="form-label">CheckInDate:</label>
+                    <InputDate id="checkindate" @bind-Value="YoReservation.CheckInDate" class="form-control" />
+                    <ValidationMessage For="() => YoReservation.CheckInDate" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="checkoutdate" class="form-label">CheckOutDate:</label>
+                    <InputDate id="checkoutdate" @bind-Value="YoReservation.CheckOutDate" class="form-control" />
+                    <ValidationMessage For="() => YoReservation.CheckOutDate" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="roomnumber" class="form-label">RoomNumber:</label>
+                    <InputText id="roomnumber" @bind-Value="YoReservation.RoomNumber" class="form-control" />
+                    <ValidationMessage For="() => YoReservation.RoomNumber" class="text-danger" />
+                </div>
+                @* <div class="mb-3">
+                    <label for="reservationstatus" class="form-label">ReservationStatus:</label>
+                    <InputText id="reservationstatus" @bind-Value="YoReservation.ReservationStatus" class="form-control" />
+                    <ValidationMessage For="() => YoReservation.ReservationStatus" class="text-danger" />
+                </div> *@
+                <div class="mb-3">
+                    <label for="cost" class="form-label">Cost:</label>
+                    <InputNumber id="cost" @bind-Value="YoReservation.Cost" class="form-control" />
+                    <ValidationMessage For="() => YoReservation.Cost" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="guestid" class="form-label">GuestId:</label>
+                    <InputNumber id="guestid" @bind-Value="YoReservation.GuestId" class="form-control" />
+                    <ValidationMessage For="() => YoReservation.GuestId" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/yoreservations">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    public YoReservation? YoReservation { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        YoReservation ??= await DB.YoReservations.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (YoReservation is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    public async Task UpdateYoReservation()
+    {
+        DB.Attach(YoReservation!).State = EntityState.Modified;
+
+        try
+        {
+            await DB.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!YoReservationExists(YoReservation!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/yoreservations");
+    }
+
+    bool YoReservationExists(int id)
+    {
+        return DB.YoReservations.Any(e => e.Id == id);
+    }
+}

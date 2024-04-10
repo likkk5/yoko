@@ -1,0 +1,76 @@
+﻿@page "/yorooms/create"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h4>YoRoom</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="YoRoom" OnValidSubmit="AddYoRoom" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+            <div class="mb-3">
+                <label for="roomnumber" class="form-label">RoomNumber:</label> 
+                <InputText id="roomnumber" @bind-Value="YoRoom.RoomNumber" class="form-control" /> 
+                <ValidationMessage For="() => YoRoom.RoomNumber" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="costfornight" class="form-label">CostForNight:</label> 
+                <InputNumber id="costfornight" @bind-Value="YoRoom.CostForNight" class="form-control" /> 
+                <ValidationMessage For="() => YoRoom.CostForNight" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="roomtype" class="form-label">RoomType:</label> 
+                <InputSelect id="roomtype" @bind-Value="YoRoom.RoomType" class="form-select">
+                   @*  <option value="@RoomType.Standart">Standart</option>
+                    <option value="@RoomType.Superior">Superior</option>
+                    <option>Bedroom</option>
+                    <option>Apartment</option>
+                    <option>Studio</option>
+                    <option>Suite</option> *@ 
+                    @foreach (var item in Enum.GetValues(typeof(RoomType)))
+                    {
+
+                        <option value="@item">@item</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => YoRoom.RoomType" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="roomstatus" class="form-label">RoomStatus:</label> 
+                <InputSelect id="roomstatus" @bind-Value="YoRoom.RoomStatus" class="form-select">
+                    @foreach (var item in Enum.GetValues(typeof(RoomStatus)))
+                    {
+
+                        <option value="@item">@item</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => YoRoom.RoomStatus" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/yorooms">Back to List</a>
+</div>
+
+@code {
+
+    [SupplyParameterFromForm]
+    public YoRoom YoRoom { get; set; } = new();
+
+    // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
+    public async Task AddYoRoom()
+    {
+        DB.YoRooms.Add(YoRoom);
+        await DB.SaveChangesAsync();
+        NavigationManager.NavigateTo("/yorooms");
+    }
+}

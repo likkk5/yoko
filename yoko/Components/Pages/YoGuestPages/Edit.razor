@@ -1,0 +1,96 @@
+﻿@page "/YoGuests/edit"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h4>YoGuest</h4>
+<hr />
+@if (YoGuest is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="YoGuest" OnValidSubmit="UpdateYoGuest" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <input type="hidden" name="YoGuest.Id" value="@YoGuest.Id" />
+                <div class="mb-3">
+                    <label for="passportnumber" class="form-label">PassportNumber:</label>
+                    <InputText id="passportnumber" @bind-Value="YoGuest.PassportNumber" class="form-control" />
+                    <ValidationMessage For="() => YoGuest.PassportNumber" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="residence" class="form-label">Residence:</label>
+                    <InputText id="residence" @bind-Value="YoGuest.Residence" class="form-control" />
+                    <ValidationMessage For="() => YoGuest.Residence" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="userid" class="form-label">UserId:</label>
+                    <InputText id="userid" @bind-Value="YoGuest.UserId" class="form-control" />
+                    <ValidationMessage For="() => YoGuest.UserId" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/yoguests">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    public YoGuest? YoGuest { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        YoGuest ??= await DB.YoGuests.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (YoGuest is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    public async Task UpdateYoGuest()
+    {
+        DB.Attach(YoGuest!).State = EntityState.Modified;
+
+        try
+        {
+            await DB.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!YoGuestExists(YoGuest!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/yoguests");
+    }
+
+    bool YoGuestExists(int id)
+    {
+        return DB.YoGuests.Any(e => e.Id == id);
+    }
+}

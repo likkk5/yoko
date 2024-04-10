@@ -1,0 +1,91 @@
+﻿@page "/YoServices/edit"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h4>YoService</h4>
+<hr />
+@if (YoService is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="YoService" OnValidSubmit="UpdateYoService" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <input type="hidden" name="YoService.Id" value="@YoService.Id" />
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name:</label>
+                    <InputText id="name" @bind-Value="YoService.Name" class="form-control" />
+                    <ValidationMessage For="() => YoService.Name" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="cost" class="form-label">Cost:</label>
+                    <InputNumber id="cost" @bind-Value="YoService.Cost" class="form-control" />
+                    <ValidationMessage For="() => YoService.Cost" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/yoservices">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    public YoService? YoService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        YoService ??= await DB.YoServices.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (YoService is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    public async Task UpdateYoService()
+    {
+        DB.Attach(YoService!).State = EntityState.Modified;
+
+        try
+        {
+            await DB.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!YoServiceExists(YoService!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/yoservices");
+    }
+
+    bool YoServiceExists(int id)
+    {
+        return DB.YoServices.Any(e => e.Id == id);
+    }
+}

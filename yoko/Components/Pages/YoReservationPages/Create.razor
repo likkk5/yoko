@@ -1,0 +1,73 @@
+﻿@page "/yoreservations/create"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h4>YoReservation</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="YoReservation" OnValidSubmit="AddYoReservation" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+            <div class="mb-3">
+                <label for="reservationdate" class="form-label">ReservationDate:</label> 
+                <InputDate id="reservationdate" @bind-Value="YoReservation.ReservationDate" class="form-control" /> 
+                <ValidationMessage For="() => YoReservation.ReservationDate" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="checkindate" class="form-label">CheckInDate:</label> 
+                <InputDate id="checkindate" @bind-Value="YoReservation.CheckInDate" class="form-control" /> 
+                <ValidationMessage For="() => YoReservation.CheckInDate" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="checkoutdate" class="form-label">CheckOutDate:</label> 
+                <InputDate id="checkoutdate" @bind-Value="YoReservation.CheckOutDate" class="form-control" /> 
+                <ValidationMessage For="() => YoReservation.CheckOutDate" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="roomnumber" class="form-label">RoomNumber:</label> 
+                <InputText id="roomnumber" @bind-Value="YoReservation.RoomNumber" class="form-control" /> 
+                <ValidationMessage For="() => YoReservation.RoomNumber" class="text-danger" /> 
+            </div>        
+            @* <div class="mb-3">
+                <label for="reservationstatus" class="form-label">ReservationStatus:</label> 
+                <InputText id="reservationstatus" @bind-Value="YoReservation.ReservationStatus" class="form-control" /> 
+                <ValidationMessage For="() => YoReservation.ReservationStatus" class="text-danger" /> 
+            </div>  *@       
+            <div class="mb-3">
+                <label for="cost" class="form-label">Cost:</label> 
+                <InputNumber id="cost" @bind-Value="YoReservation.Cost" class="form-control" /> 
+                <ValidationMessage For="() => YoReservation.Cost" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="guestid" class="form-label">GuestId:</label> 
+                <InputNumber id="guestid" @bind-Value="YoReservation.GuestId" class="form-control" /> 
+                <ValidationMessage For="() => YoReservation.GuestId" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/yoreservations">Back to List</a>
+</div>
+
+@code {
+
+    [SupplyParameterFromForm]
+    public YoReservation YoReservation { get; set; } = new();
+
+    // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
+    public async Task AddYoReservation()
+    {
+        DB.YoReservations.Add(YoReservation);
+        await DB.SaveChangesAsync();
+        NavigationManager.NavigateTo("/yoreservations");
+    }
+}

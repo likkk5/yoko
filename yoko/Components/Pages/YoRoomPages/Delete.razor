@@ -1,0 +1,65 @@
+﻿@page "/yorooms/delete"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Delete</PageTitle>
+
+<h1>Delete</h1>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>YoRoom</h4>
+    <hr />
+    @if (yoroom is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">RoomNumber</dt>
+            <dd class="col-sm-10">@yoroom.RoomNumber</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">CostForNight</dt>
+            <dd class="col-sm-10">@yoroom.CostForNight</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">RoomType</dt>
+            <dd class="col-sm-10">@yoroom.RoomType</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">RoomStatus</dt>
+            <dd class="col-sm-10">@yoroom.RoomStatus</dd>
+        </dl>
+        <EditForm method="post" Model="yoroom" OnValidSubmit="DeleteYoRoom" FormName="delete" Enhance>
+            <button type="submit" class="btn btn-danger" disabled="@(yoroom is null)">Delete</button> |
+            <a href="/yorooms">Back to List</a>
+        </EditForm>
+    }
+</div>
+
+@code {
+    YoRoom? yoroom;
+
+    [SupplyParameterFromQuery]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        yoroom = await DB.YoRooms.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (yoroom is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    public async Task DeleteYoRoom()
+    {
+        DB.YoRooms.Remove(yoroom!);
+        await DB.SaveChangesAsync();
+        NavigationManager.NavigateTo("/yorooms");
+    }
+}

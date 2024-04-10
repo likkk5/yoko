@@ -1,0 +1,53 @@
+﻿@page "/yoguests/create"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h4>YoGuest</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="YoGuest" OnValidSubmit="AddYoGuest" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+            <div class="mb-3">
+                <label for="passportnumber" class="form-label">PassportNumber:</label> 
+                <InputText id="passportnumber" @bind-Value="YoGuest.PassportNumber" class="form-control" /> 
+                <ValidationMessage For="() => YoGuest.PassportNumber" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="residence" class="form-label">Residence:</label> 
+                <InputText id="residence" @bind-Value="YoGuest.Residence" class="form-control" /> 
+                <ValidationMessage For="() => YoGuest.Residence" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="userid" class="form-label">UserId:</label> 
+                <InputText id="userid" @bind-Value="YoGuest.UserId" class="form-control" /> 
+                <ValidationMessage For="() => YoGuest.UserId" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/yoguests">Back to List</a>
+</div>
+
+@code {
+    private ApplicationUser[]? applicationuser;
+    [SupplyParameterFromForm]
+    public YoGuest YoGuest { get; set; } = new();
+
+    // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
+    public async Task AddYoGuest()
+    {
+        DB.YoGuests.Add(YoGuest);
+        await DB.SaveChangesAsync();
+        NavigationManager.NavigateTo("/yoguests");
+    }
+}

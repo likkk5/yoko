@@ -1,0 +1,77 @@
+﻿@page "/yoreservations/delete"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Delete</PageTitle>
+
+<h1>Delete</h1>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>YoReservation</h4>
+    <hr />
+    @if (yoreservation is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">ReservationDate</dt>
+            <dd class="col-sm-10">@yoreservation.ReservationDate</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">CheckInDate</dt>
+            <dd class="col-sm-10">@yoreservation.CheckInDate</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">CheckOutDate</dt>
+            <dd class="col-sm-10">@yoreservation.CheckOutDate</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">RoomNumber</dt>
+            <dd class="col-sm-10">@yoreservation.RoomNumber</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">ReservationStatus</dt>
+            <dd class="col-sm-10">@yoreservation.ReservationStatus</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">Cost</dt>
+            <dd class="col-sm-10">@yoreservation.Cost</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">GuestId</dt>
+            <dd class="col-sm-10">@yoreservation.GuestId</dd>
+        </dl>
+        <EditForm method="post" Model="yoreservation" OnValidSubmit="DeleteYoReservation" FormName="delete" Enhance>
+            <button type="submit" class="btn btn-danger" disabled="@(yoreservation is null)">Delete</button> |
+            <a href="/yoreservations">Back to List</a>
+        </EditForm>
+    }
+</div>
+
+@code {
+    YoReservation? yoreservation;
+
+    [SupplyParameterFromQuery]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        yoreservation = await DB.YoReservations.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (yoreservation is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    public async Task DeleteYoReservation()
+    {
+        DB.YoReservations.Remove(yoreservation!);
+        await DB.SaveChangesAsync();
+        NavigationManager.NavigateTo("/yoreservations");
+    }
+}

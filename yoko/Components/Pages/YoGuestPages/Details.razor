@@ -1,0 +1,49 @@
+﻿@page "/yoguests/details"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h4>YoGuest</h4>
+    <hr />
+    @if (yoguest is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">PassportNumber</dt>
+            <dd class="col-sm-10">@yoguest.PassportNumber</dd>
+            <dt class="col-sm-2">Residence</dt>
+            <dd class="col-sm-10">@yoguest.Residence</dd>
+            <dt class="col-sm-2">UserId</dt>
+            <dd class="col-sm-10">@yoguest.UserId</dd>
+        </dl>
+        <div>
+            <a href="@($"/yoguests/edit?id={yoguest.Id}")">Edit</a> |
+            <a href="@($"/yoguests")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    YoGuest? yoguest;
+
+    [SupplyParameterFromQuery]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        yoguest = await DB.YoGuests.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (yoguest is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

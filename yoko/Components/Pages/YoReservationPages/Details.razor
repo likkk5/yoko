@@ -1,0 +1,57 @@
+﻿@page "/yoreservations/details"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h4>YoReservation</h4>
+    <hr />
+    @if (yoreservation is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">ReservationDate</dt>
+            <dd class="col-sm-10">@yoreservation.ReservationDate</dd>
+            <dt class="col-sm-2">CheckInDate</dt>
+            <dd class="col-sm-10">@yoreservation.CheckInDate</dd>
+            <dt class="col-sm-2">CheckOutDate</dt>
+            <dd class="col-sm-10">@yoreservation.CheckOutDate</dd>
+            <dt class="col-sm-2">RoomNumber</dt>
+            <dd class="col-sm-10">@yoreservation.RoomNumber</dd>
+            <dt class="col-sm-2">ReservationStatus</dt>
+            <dd class="col-sm-10">@yoreservation.ReservationStatus</dd>
+            <dt class="col-sm-2">Cost</dt>
+            <dd class="col-sm-10">@yoreservation.Cost</dd>
+            <dt class="col-sm-2">GuestId</dt>
+            <dd class="col-sm-10">@yoreservation.GuestId</dd>
+        </dl>
+        <div>
+            <a href="@($"/yoreservations/edit?id={yoreservation.Id}")">Edit</a> |
+            <a href="@($"/yoreservations")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    YoReservation? yoreservation;
+
+    [SupplyParameterFromQuery]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        yoreservation = await DB.YoReservations.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (yoreservation is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}
