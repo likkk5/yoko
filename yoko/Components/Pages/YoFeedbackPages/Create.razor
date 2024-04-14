@@ -1,0 +1,63 @@
+﻿@page "/yofeedbacks/create"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h4>YoFeedback</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="YoFeedback" OnValidSubmit="AddYoFeedback" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+            <div class="mb-3">
+                <label for="feedbackdate" class="form-label">FeedbackDate:</label> 
+                <InputDate id="feedbackdate" @bind-Value="YoFeedback.FeedbackDate" class="form-control" /> 
+                <ValidationMessage For="() => YoFeedback.FeedbackDate" class="text-danger" /> 
+            </div>        
+           @*  <div class="mb-3">
+                <label for="feedbacktime" class="form-label">FeedbackTime:</label> 
+                <InputText id="feedbacktime" @bind-Value="YoFeedback.FeedbackTime" class="form-control" /> 
+                <ValidationMessage For="() => YoFeedback.FeedbackTime" class="text-danger" /> 
+            </div>  *@       
+            <div class="mb-3">
+                <label for="feedbacktext" class="form-label">FeedbackText:</label> 
+                <InputText id="feedbacktext" @bind-Value="YoFeedback.FeedbackText" class="form-control" /> 
+                <ValidationMessage For="() => YoFeedback.FeedbackText" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="rating" class="form-label">Rating:</label> 
+                <InputNumber id="rating" @bind-Value="YoFeedback.Rating" class="form-control" /> 
+                <ValidationMessage For="() => YoFeedback.Rating" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="guestid" class="form-label">GuestId:</label> 
+                <InputNumber id="guestid" @bind-Value="YoFeedback.GuestId" class="form-control" /> 
+                <ValidationMessage For="() => YoFeedback.GuestId" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/yofeedbacks">Back to List</a>
+</div>
+
+@code {
+
+    [SupplyParameterFromForm]
+    public YoFeedback YoFeedback { get; set; } = new();
+
+    // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
+    public async Task AddYoFeedback()
+    {
+        DB.YoFeedbacks.Add(YoFeedback);
+        await DB.SaveChangesAsync();
+        NavigationManager.NavigateTo("/yofeedbacks");
+    }
+}

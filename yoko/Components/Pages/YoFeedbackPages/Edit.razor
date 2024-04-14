@@ -1,0 +1,106 @@
+﻿@page "/YoFeedbacks/edit"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h4>YoFeedback</h4>
+<hr />
+@if (YoFeedback is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="YoFeedback" OnValidSubmit="UpdateYoFeedback" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <input type="hidden" name="YoFeedback.Id" value="@YoFeedback.Id" />
+                <div class="mb-3">
+                    <label for="feedbackdate" class="form-label">FeedbackDate:</label>
+                    <InputDate id="feedbackdate" @bind-Value="YoFeedback.FeedbackDate" class="form-control" />
+                    <ValidationMessage For="() => YoFeedback.FeedbackDate" class="text-danger" />
+                </div>
+                @* <div class="mb-3">
+                    <label for="feedbacktime" class="form-label">FeedbackTime:</label>
+                    <InputDate id="feedbacktime" @bind-Value="YoFeedback.FeedbackTime" class="form-control" />
+                    <ValidationMessage For="() => YoFeedback.FeedbackTime" class="text-danger" />
+                </div> *@
+                <div class="mb-3">
+                    <label for="feedbacktext" class="form-label">FeedbackText:</label>
+                    <InputText id="feedbacktext" @bind-Value="YoFeedback.FeedbackText" class="form-control" />
+                    <ValidationMessage For="() => YoFeedback.FeedbackText" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="rating" class="form-label">Rating:</label>
+                    <InputNumber id="rating" @bind-Value="YoFeedback.Rating" class="form-control" />
+                    <ValidationMessage For="() => YoFeedback.Rating" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="guestid" class="form-label">GuestId:</label>
+                    <InputNumber id="guestid" @bind-Value="YoFeedback.GuestId" class="form-control" />
+                    <ValidationMessage For="() => YoFeedback.GuestId" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/yofeedbacks">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    public YoFeedback? YoFeedback { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        YoFeedback ??= await DB.YoFeedbacks.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (YoFeedback is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    public async Task UpdateYoFeedback()
+    {
+        DB.Attach(YoFeedback!).State = EntityState.Modified;
+
+        try
+        {
+            await DB.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!YoFeedbackExists(YoFeedback!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/yofeedbacks");
+    }
+
+    bool YoFeedbackExists(int id)
+    {
+        return DB.YoFeedbacks.Any(e => e.Id == id);
+    }
+}

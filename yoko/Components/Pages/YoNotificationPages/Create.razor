@@ -1,0 +1,53 @@
+﻿@page "/yonotifications/create"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h4>YoNotification</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="YoNotification" OnValidSubmit="AddYoNotification" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+            <div class="mb-3">
+                <label for="orderid" class="form-label">OrderId:</label> 
+                <InputNumber id="orderid" @bind-Value="YoNotification.OrderId" class="form-control" /> 
+                <ValidationMessage For="() => YoNotification.OrderId" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="notificationdatetime" class="form-label">NotificationDateTime:</label> 
+                <InputDate id="notificationdatetime" @bind-Value="YoNotification.NotificationDateTime" class="form-control" /> 
+                <ValidationMessage For="() => YoNotification.NotificationDateTime" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="notificationtext" class="form-label">NotificationText:</label> 
+                <InputText id="notificationtext" @bind-Value="YoNotification.NotificationText" class="form-control" /> 
+                <ValidationMessage For="() => YoNotification.NotificationText" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/yonotifications">Back to List</a>
+</div>
+
+@code {
+
+    [SupplyParameterFromForm]
+    public YoNotification YoNotification { get; set; } = new();
+
+    // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
+    public async Task AddYoNotification()
+    {
+        DB.YoNotifications.Add(YoNotification);
+        await DB.SaveChangesAsync();
+        NavigationManager.NavigateTo("/yonotifications");
+    }
+}

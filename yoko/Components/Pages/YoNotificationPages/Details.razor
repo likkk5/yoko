@@ -1,0 +1,49 @@
+﻿@page "/yonotifications/details"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h4>YoNotification</h4>
+    <hr />
+    @if (yonotification is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">OrderId</dt>
+            <dd class="col-sm-10">@yonotification.OrderId</dd>
+            <dt class="col-sm-2">NotificationDateTime</dt>
+            <dd class="col-sm-10">@yonotification.NotificationDateTime</dd>
+            <dt class="col-sm-2">NotificationText</dt>
+            <dd class="col-sm-10">@yonotification.NotificationText</dd>
+        </dl>
+        <div>
+            <a href="@($"/yonotifications/edit?id={yonotification.Id}")">Edit</a> |
+            <a href="@($"/yonotifications")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    YoNotification? yonotification;
+
+    [SupplyParameterFromQuery]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        yonotification = await DB.YoNotifications.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (yonotification is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

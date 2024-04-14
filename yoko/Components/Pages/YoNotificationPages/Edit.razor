@@ -1,0 +1,96 @@
+﻿@page "/YoNotifications/edit"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h4>YoNotification</h4>
+<hr />
+@if (YoNotification is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="YoNotification" OnValidSubmit="UpdateYoNotification" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <input type="hidden" name="YoNotification.Id" value="@YoNotification.Id" />
+                <div class="mb-3">
+                    <label for="orderid" class="form-label">OrderId:</label>
+                    <InputNumber id="orderid" @bind-Value="YoNotification.OrderId" class="form-control" />
+                    <ValidationMessage For="() => YoNotification.OrderId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="notificationdatetime" class="form-label">NotificationDateTime:</label>
+                    <InputDate id="notificationdatetime" @bind-Value="YoNotification.NotificationDateTime" class="form-control" />
+                    <ValidationMessage For="() => YoNotification.NotificationDateTime" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="notificationtext" class="form-label">NotificationText:</label>
+                    <InputText id="notificationtext" @bind-Value="YoNotification.NotificationText" class="form-control" />
+                    <ValidationMessage For="() => YoNotification.NotificationText" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/yonotifications">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    public YoNotification? YoNotification { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        YoNotification ??= await DB.YoNotifications.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (YoNotification is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    public async Task UpdateYoNotification()
+    {
+        DB.Attach(YoNotification!).State = EntityState.Modified;
+
+        try
+        {
+            await DB.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!YoNotificationExists(YoNotification!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/yonotifications");
+    }
+
+    bool YoNotificationExists(int id)
+    {
+        return DB.YoNotifications.Any(e => e.Id == id);
+    }
+}

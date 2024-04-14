@@ -1,0 +1,61 @@
+﻿@page "/yonotifications/delete"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Delete</PageTitle>
+
+<h1>Delete</h1>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>YoNotification</h4>
+    <hr />
+    @if (yonotification is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">OrderId</dt>
+            <dd class="col-sm-10">@yonotification.OrderId</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">NotificationDateTime</dt>
+            <dd class="col-sm-10">@yonotification.NotificationDateTime</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">NotificationText</dt>
+            <dd class="col-sm-10">@yonotification.NotificationText</dd>
+        </dl>
+        <EditForm method="post" Model="yonotification" OnValidSubmit="DeleteYoNotification" FormName="delete" Enhance>
+            <button type="submit" class="btn btn-danger" disabled="@(yonotification is null)">Delete</button> |
+            <a href="/yonotifications">Back to List</a>
+        </EditForm>
+    }
+</div>
+
+@code {
+    YoNotification? yonotification;
+
+    [SupplyParameterFromQuery]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        yonotification = await DB.YoNotifications.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (yonotification is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    public async Task DeleteYoNotification()
+    {
+        DB.YoNotifications.Remove(yonotification!);
+        await DB.SaveChangesAsync();
+        NavigationManager.NavigateTo("/yonotifications");
+    }
+}
