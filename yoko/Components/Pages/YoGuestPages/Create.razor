@@ -2,6 +2,8 @@
 @inject yoko.Data.ApplicationDbContext DB
 @using yoko.Data
 @inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
 
 <PageTitle>Create</PageTitle>
 
@@ -24,11 +26,21 @@
                 <InputText id="residence" @bind-Value="YoGuest.Residence" class="form-control" /> 
                 <ValidationMessage For="() => YoGuest.Residence" class="text-danger" /> 
             </div>        
-            <div class="mb-3">
+           @*  <div class="mb-3">
                 <label for="userid" class="form-label">UserId:</label> 
                 <InputText id="userid" @bind-Value="YoGuest.UserId" class="form-control" /> 
                 <ValidationMessage For="() => YoGuest.UserId" class="text-danger" /> 
-            </div>        
+            </div> *@      
+            <div class="mb-3">
+                <label for="userid" class="form-label">UserId:</label>
+                <select id="userid" @bind="YoGuest.UserId" class="form-control">
+                    @foreach (var user in users)
+                    {
+                        <option value="@user.Id">@user.UserName</option>
+                    }
+                </select>
+                <ValidationMessage For="() => YoGuest.UserId" class="text-danger" />
+            </div>
             <button type="submit" class="btn btn-primary">Create</button>
         </EditForm>
     </div>
@@ -39,7 +51,15 @@
 </div>
 
 @code {
-    private ApplicationUser[]? applicationuser;
+    //private ApplicationUser[]? applicationuser;
+    private List<ApplicationUser> users = new List<ApplicationUser>();
+
+    protected override void OnInitialized()
+    {
+        // Получаем список пользователей
+        var allUsers = UserManager.Users.ToList();
+        users.AddRange(allUsers);
+    }
     [SupplyParameterFromForm]
     public YoGuest YoGuest { get; set; } = new();
 

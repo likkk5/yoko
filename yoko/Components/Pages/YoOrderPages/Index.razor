@@ -1,0 +1,27 @@
+﻿@page "/yoorders"
+@using Microsoft.AspNetCore.Components.QuickGrid
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="yoorders/create">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="DB.YoOrders">
+    <PropertyColumn Property="yoorder => yoorder.OrderDate" />
+    <PropertyColumn Property="yoorder => yoorder.ReservationId" />
+    <PropertyColumn Property="yoorder => yoorder.OrderStatus" />
+    <PropertyColumn Property="yoorder => yoorder.NotificationId" />
+    <PropertyColumn Property="yoorder => yoorder.EmployeeId" />
+    <PropertyColumn Property="yoorder => yoorder.Cost" />
+
+    <TemplateColumn Context="yoorder">
+        <a href="@($"yoorders/edit?id={yoorder.Id}")">Edit</a> |
+        <a href="@($"yoorders/details?id={yoorder.Id}")">Details</a> |
+        <a href="@($"yoorders/delete?id={yoorder.Id}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>

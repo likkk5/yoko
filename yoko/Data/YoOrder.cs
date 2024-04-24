@@ -10,7 +10,7 @@ namespace yoko.Data
         public int Id { get; set; }
         public DateTime OrderDate { get; set; }
         public int? ReservationId { get; set; }
-        public List<YoService> ServicesInOrder { get; set; }
+        //public List<YoService> ServicesInOrders { get; set; }
         public string OrderStatus { get; set; }
         public int? NotificationId { get; set; }
         public string? EmployeeId { get; set; }

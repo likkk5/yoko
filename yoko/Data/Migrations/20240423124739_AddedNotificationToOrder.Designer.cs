@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using yoko.Data;
 
@@ -11,9 +12,11 @@ using yoko.Data;
 namespace yoko.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240423124739_AddedNotificationToOrder")]
+    partial class AddedNotificationToOrder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -314,9 +317,6 @@ namespace yoko.Migrations
                     b.Property<double>("Cost")
                         .HasColumnType("float");
 
-                    b.Property<string>("EmployeeId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<int?>("NotificationId")
                         .HasColumnType("int");
 
@@ -331,8 +331,6 @@ namespace yoko.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("EmployeeId");
 
                     b.HasIndex("NotificationId");
 
@@ -542,10 +540,6 @@ namespace yoko.Migrations
 
             modelBuilder.Entity("yoko.Data.YoOrder", b =>
                 {
-                    b.HasOne("yoko.Data.ApplicationUser", "Employee")
-                        .WithMany()
-                        .HasForeignKey("EmployeeId");
-
                     b.HasOne("yoko.Data.YoNotification", "Notification")
                         .WithMany()
                         .HasForeignKey("NotificationId");
@@ -553,8 +547,6 @@ namespace yoko.Migrations
                     b.HasOne("yoko.Data.YoReservation", "Reservation")
                         .WithMany()
                         .HasForeignKey("ReservationId");
-
-                    b.Navigation("Employee");
 
                     b.Navigation("Notification");
 

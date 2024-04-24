@@ -24,7 +24,12 @@ else
                 <input type="hidden" name="YoNotification.Id" value="@YoNotification.Id" />
                 <div class="mb-3">
                     <label for="orderid" class="form-label">OrderId:</label>
-                    <InputNumber id="orderid" @bind-Value="YoNotification.OrderId" class="form-control" />
+                    <select id="orderid" @bind="YoNotification.OrderId" class="form-control">
+                        @foreach (var order in orders)
+                        {
+                            <option value="@order.Id">@order.Id</option>
+                        }
+                    </select>
                     <ValidationMessage For="() => YoNotification.OrderId" class="text-danger" />
                 </div>
                 <div class="mb-3">
@@ -54,6 +59,8 @@ else
     [SupplyParameterFromForm]
     public YoNotification? YoNotification { get; set; }
 
+    private List<YoOrder> orders = new List<YoOrder>();
+
     protected override async Task OnInitializedAsync()
     {
         YoNotification ??= await DB.YoNotifications.FirstOrDefaultAsync(m => m.Id == Id);
@@ -62,6 +69,8 @@ else
         {
             NavigationManager.NavigateTo("notfound");
         }
+        // Получаем список гостей
+        orders = DB.YoOrders.ToList();
     }
 
     // To protect from overposting attacks, enable the specific properties you want to bind to.

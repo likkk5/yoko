@@ -49,12 +49,17 @@
                 <label for="cost" class="form-label">Cost:</label> 
                 <InputNumber id="cost" @bind-Value="YoReservation.Cost" class="form-control" /> 
                 <ValidationMessage For="() => YoReservation.Cost" class="text-danger" /> 
-            </div>        
+            </div>
             <div class="mb-3">
-                <label for="guestid" class="form-label">GuestId:</label> 
-                <InputNumber id="guestid" @bind-Value="YoReservation.GuestId" class="form-control" /> 
-                <ValidationMessage For="() => YoReservation.GuestId" class="text-danger" /> 
-            </div>        
+                <label for="guestid" class="form-label">GuestId:</label>
+                <select id="guestid" @bind="YoReservation.GuestId" class="form-control">
+                    @foreach (var guest in guests)
+                    {
+                        <option value="@guest.Id">@guest.Id</option>
+                    }
+                </select>
+                <ValidationMessage For="() => YoReservation.GuestId" class="text-danger" />
+            </div>
             <button type="submit" class="btn btn-primary">Create</button>
         </EditForm>
     </div>
@@ -65,7 +70,13 @@
 </div>
 
 @code {
+    private List<YoGuest> guests = new List<YoGuest>();
 
+    protected override void OnInitialized()
+    {
+        // Получаем список гостей
+        guests = DB.YoGuests.ToList();
+    }
     [SupplyParameterFromForm]
     public YoReservation YoReservation { get; set; } = new();
 

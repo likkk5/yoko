@@ -62,7 +62,13 @@
 </div>
 
 @code {
+    private List<YoGuest> guests = new List<YoGuest>();
 
+    protected override void OnInitialized()
+    {
+        // Получаем список гостей
+        guests = DB.YoGuests.ToList();
+    }
     [SupplyParameterFromForm]
     public YoRoom YoRoom { get; set; } = new();
 

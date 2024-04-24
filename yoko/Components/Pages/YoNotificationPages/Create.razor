@@ -15,10 +15,15 @@
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" />
             <div class="mb-3">
-                <label for="orderid" class="form-label">OrderId:</label> 
-                <InputNumber id="orderid" @bind-Value="YoNotification.OrderId" class="form-control" /> 
-                <ValidationMessage For="() => YoNotification.OrderId" class="text-danger" /> 
-            </div>        
+                <label for="orderid" class="form-label">OrderId:</label>
+                <select id="orderid" @bind="YoNotification.OrderId" class="form-control">
+                    @foreach (var order in orders)
+                    {
+                        <option value="@order.Id">@order.Id</option>
+                    }
+                </select>
+                <ValidationMessage For="() => YoNotification.OrderId" class="text-danger" />
+            </div>
             <div class="mb-3">
                 <label for="notificationdatetime" class="form-label">NotificationDateTime:</label> 
                 <InputDate id="notificationdatetime" @bind-Value="YoNotification.NotificationDateTime" class="form-control" /> 
@@ -39,7 +44,13 @@
 </div>
 
 @code {
+    private List<YoOrder> orders = new List<YoOrder>();
 
+    protected override void OnInitialized()
+    {
+        // Получаем список гостей
+        orders = DB.YoOrders.ToList();
+    }
     [SupplyParameterFromForm]
     public YoNotification YoNotification { get; set; } = new();
 

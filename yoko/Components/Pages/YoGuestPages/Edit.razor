@@ -3,6 +3,8 @@
 @using yoko.Data
 @inject NavigationManager NavigationManager
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
 
 <PageTitle>Edit</PageTitle>
 
@@ -34,7 +36,12 @@ else
                 </div>
                 <div class="mb-3">
                     <label for="userid" class="form-label">UserId:</label>
-                    <InputText id="userid" @bind-Value="YoGuest.UserId" class="form-control" />
+                    <select id="userid" @bind="YoGuest.UserId" class="form-control">
+                        @foreach (var user in users)
+                        {
+                            <option value="@user.Id">@user.UserName</option>
+                        }
+                    </select>
                     <ValidationMessage For="() => YoGuest.UserId" class="text-danger" />
                 </div>
                 <button type="submit" class="btn btn-primary">Save</button>
@@ -54,6 +61,8 @@ else
     [SupplyParameterFromForm]
     public YoGuest? YoGuest { get; set; }
 
+    private List<ApplicationUser> users = new List<ApplicationUser>();
+
     protected override async Task OnInitializedAsync()
     {
         YoGuest ??= await DB.YoGuests.FirstOrDefaultAsync(m => m.Id == Id);
@@ -62,6 +71,9 @@ else
         {
             NavigationManager.NavigateTo("notfound");
         }
+        // Получаем список пользователей
+        var allUsers = UserManager.Users.ToList();
+        users.AddRange(allUsers);
     }
 
     // To protect from overposting attacks, enable the specific properties you want to bind to.

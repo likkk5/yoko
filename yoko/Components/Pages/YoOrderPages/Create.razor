@@ -1,0 +1,104 @@
+﻿@page "/yoorders/create"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h4>YoOrder</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="YoOrder" OnValidSubmit="AddYoOrder" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+            <div class="mb-3">
+                <label for="orderdate" class="form-label">OrderDate:</label> 
+                <InputDate id="orderdate" @bind-Value="YoOrder.OrderDate" class="form-control" /> 
+                <ValidationMessage For="() => YoOrder.OrderDate" class="text-danger" /> 
+            </div>
+            <div class="mb-3">
+                <label for="reservationid" class="form-label">ReservationId:</label>
+                <select id="reservationid" @bind="YoOrder.ReservationId" class="form-control">
+                    @foreach (var reservation in reservations)
+                    {
+                        <option value="@reservation.Id">@reservation.Id</option>
+                    }
+                </select>
+                <ValidationMessage For="() => YoOrder.ReservationId" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="orderstatus" class="form-label">OrderStatus:</label> 
+                <InputText id="orderstatus" @bind-Value="YoOrder.OrderStatus" class="form-control" /> 
+                <ValidationMessage For="() => YoOrder.OrderStatus" class="text-danger" /> 
+            </div>
+            <div class="mb-3">
+                <label for="notificationid" class="form-label">NotificationId:</label>
+                <select id="notificationid" @bind="YoOrder.NotificationId" class="form-control">
+                    @foreach (var notification in notifications)
+                    {
+                        <option value="@notification.Id">@notification.Id</option>
+                    }
+                </select>
+                <ValidationMessage For="() => YoOrder.NotificationId" class="text-danger" />
+            </div>
+          @*   <div class="mb-3">
+                <label for="employeeid" class="form-label">EmployeeId:</label> 
+                <InputText id="employeeid" @bind-Value="YoOrder.EmployeeId" class="form-control" /> 
+                <ValidationMessage For="() => YoOrder.EmployeeId" class="text-danger" /> 
+            </div> *@   
+            <div class="mb-3">
+                <label for="employeeid" class="form-label">EmployeeId:</label>
+                <select id="employeeid" @bind="YoOrder.EmployeeId" class="form-control">
+                    @foreach (var user in users)
+                    {
+                        <option value="@user.Id">@user.UserName</option>
+                    }
+                </select>
+                <ValidationMessage For="() => YoOrder.EmployeeId" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="cost" class="form-label">Cost:</label> 
+                <InputNumber id="cost" @bind-Value="YoOrder.Cost" class="form-control" /> 
+                <ValidationMessage For="() => YoOrder.Cost" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/yoorders">Back to List</a>
+</div>
+
+@code {
+    private List<YoReservation> reservations = new List<YoReservation>();
+    private List<YoNotification> notifications = new List<YoNotification>();
+    private List<ApplicationUser> users = new List<ApplicationUser>();
+
+    protected override void OnInitialized()
+    {
+        // Получаем список резерваций
+        reservations = DB.YoReservations.ToList();
+        // Получаем список уведомлений
+        notifications = DB.YoNotifications.ToList();
+        // Получаем список пользователей
+        var allUsers = UserManager.Users.ToList();
+        users.AddRange(allUsers);
+    }
+
+    [SupplyParameterFromForm]
+    public YoOrder YoOrder { get; set; } = new();
+
+    // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
+    public async Task AddYoOrder()
+    {
+        DB.YoOrders.Add(YoOrder);
+        await DB.SaveChangesAsync();
+        NavigationManager.NavigateTo("/yoorders");
+    }
+}

@@ -3,6 +3,8 @@
 @using yoko.Data
 @inject NavigationManager NavigationManager
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
 
 <PageTitle>Edit</PageTitle>
 
@@ -24,17 +26,32 @@ else
                 <input type="hidden" name="YoServiceinOrder.Id" value="@YoServiceinOrder.Id" />
                 <div class="mb-3">
                     <label for="serviceid" class="form-label">ServiceId:</label>
-                    <InputNumber id="serviceid" @bind-Value="YoServiceinOrder.ServiceId" class="form-control" />
+                    <select id="serviceid" @bind="YoServiceinOrder.ServiceId" class="form-control">
+                        @foreach (var service in services)
+                        {
+                            <option value="@service.Id">@service.Id</option>
+                        }
+                    </select>
                     <ValidationMessage For="() => YoServiceinOrder.ServiceId" class="text-danger" />
                 </div>
                 <div class="mb-3">
                     <label for="orderid" class="form-label">OrderId:</label>
-                    <InputNumber id="orderid" @bind-Value="YoServiceinOrder.OrderId" class="form-control" />
+                    <select id="orderid" @bind="YoServiceinOrder.OrderId" class="form-control">
+                        @foreach (var order in orders)
+                        {
+                            <option value="@order.Id">@order.Id</option>
+                        }
+                    </select>
                     <ValidationMessage For="() => YoServiceinOrder.OrderId" class="text-danger" />
                 </div>
                 <div class="mb-3">
                     <label for="employeeid" class="form-label">EmployeeId:</label>
-                    <InputText id="employeeid" @bind-Value="YoServiceinOrder.EmployeeId" class="form-control" />
+                    <select id="employeeid" @bind="YoServiceinOrder.EmployeeId" class="form-control">
+                        @foreach (var user in users)
+                        {
+                            <option value="@user.Id">@user.UserName</option>
+                        }
+                    </select>
                     <ValidationMessage For="() => YoServiceinOrder.EmployeeId" class="text-danger" />
                 </div>
                 <div class="mb-3">
@@ -59,6 +76,10 @@ else
     [SupplyParameterFromForm]
     public YoServiceinOrder? YoServiceinOrder { get; set; }
 
+    private List<YoService> services = new List<YoService>();
+    private List<YoOrder> orders = new List<YoOrder>();
+    private List<ApplicationUser> users = new List<ApplicationUser>();
+
     protected override async Task OnInitializedAsync()
     {
         YoServiceinOrder ??= await DB.YoServiceinOrders.FirstOrDefaultAsync(m => m.Id == Id);
@@ -67,6 +88,14 @@ else
         {
             NavigationManager.NavigateTo("notfound");
         }
+
+        // Получаем список услуг
+        services = DB.YoServices.ToList();
+        // Получаем список заказов
+        orders = DB.YoOrders.ToList();
+        // Получаем список пользователей
+        var allUsers = UserManager.Users.ToList();
+        users.AddRange(allUsers);
     }
 
     // To protect from overposting attacks, enable the specific properties you want to bind to.

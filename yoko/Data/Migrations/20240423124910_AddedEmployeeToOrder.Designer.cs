@@ -12,8 +12,8 @@ using yoko.Data;
 namespace yoko.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240411055832_AddedYoOrderAll")]
-    partial class AddedYoOrderAll
+    [Migration("20240423124910_AddedEmployeeToOrder")]
+    partial class AddedEmployeeToOrder
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -318,10 +318,9 @@ namespace yoko.Migrations
                         .HasColumnType("float");
 
                     b.Property<string>("EmployeeId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("NotificationId")
+                    b.Property<int?>("NotificationId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("OrderDate")
@@ -331,7 +330,7 @@ namespace yoko.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ReservationId")
+                    b.Property<int?>("ReservationId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -423,12 +422,7 @@ namespace yoko.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("YoOrderId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("YoOrderId");
 
                     b.ToTable("YoServices");
                 });
@@ -553,21 +547,15 @@ namespace yoko.Migrations
                 {
                     b.HasOne("yoko.Data.ApplicationUser", "Employee")
                         .WithMany()
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("EmployeeId");
 
                     b.HasOne("yoko.Data.YoNotification", "Notification")
                         .WithMany()
-                        .HasForeignKey("NotificationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("NotificationId");
 
                     b.HasOne("yoko.Data.YoReservation", "Reservation")
                         .WithMany()
-                        .HasForeignKey("ReservationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ReservationId");
 
                     b.Navigation("Employee");
 
@@ -585,13 +573,6 @@ namespace yoko.Migrations
                         .IsRequired();
 
                     b.Navigation("Guest");
-                });
-
-            modelBuilder.Entity("yoko.Data.YoService", b =>
-                {
-                    b.HasOne("yoko.Data.YoOrder", null)
-                        .WithMany("ServicesInOrder")
-                        .HasForeignKey("YoOrderId");
                 });
 
             modelBuilder.Entity("yoko.Data.YoServiceinOrder", b =>
@@ -624,11 +605,6 @@ namespace yoko.Migrations
             modelBuilder.Entity("yoko.Data.YoGuest", b =>
                 {
                     b.Navigation("ReservationList");
-                });
-
-            modelBuilder.Entity("yoko.Data.YoOrder", b =>
-                {
-                    b.Navigation("ServicesInOrder");
                 });
 #pragma warning restore 612, 618
         }

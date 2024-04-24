@@ -100,6 +100,7 @@
 
         await SignInManager.SignInAsync(user, isPersistent: false);
         RedirectManager.RedirectTo(ReturnUrl);
+        var test = UserManager.Users;
     }
 
     private ApplicationUser CreateUser()

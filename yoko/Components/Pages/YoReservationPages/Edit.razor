@@ -54,7 +54,12 @@ else
                 </div>
                 <div class="mb-3">
                     <label for="guestid" class="form-label">GuestId:</label>
-                    <InputNumber id="guestid" @bind-Value="YoReservation.GuestId" class="form-control" />
+                    <select id="guestid" @bind="YoReservation.GuestId" class="form-control">
+                        @foreach (var guest in guests)
+                        {
+                            <option value="@guest.Id">@guest.Id</option>
+                        }
+                    </select>
                     <ValidationMessage For="() => YoReservation.GuestId" class="text-danger" />
                 </div>
                 <button type="submit" class="btn btn-primary">Save</button>
@@ -74,6 +79,8 @@ else
     [SupplyParameterFromForm]
     public YoReservation? YoReservation { get; set; }
 
+    private List<YoGuest> guests = new List<YoGuest>();
+
     protected override async Task OnInitializedAsync()
     {
         YoReservation ??= await DB.YoReservations.FirstOrDefaultAsync(m => m.Id == Id);
@@ -82,6 +89,8 @@ else
         {
             NavigationManager.NavigateTo("notfound");
         }
+        // Получаем список гостей
+        guests = DB.YoGuests.ToList();
     }
 
     // To protect from overposting attacks, enable the specific properties you want to bind to.

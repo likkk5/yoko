@@ -1,0 +1,140 @@
+﻿@page "/YoOrders/edit"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h4>YoOrder</h4>
+<hr />
+@if (YoOrder is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="YoOrder" OnValidSubmit="UpdateYoOrder" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <input type="hidden" name="YoOrder.Id" value="@YoOrder.Id" />
+                <div class="mb-3">
+                    <label for="orderdate" class="form-label">OrderDate:</label>
+                    <InputDate id="orderdate" @bind-Value="YoOrder.OrderDate" class="form-control" />
+                    <ValidationMessage For="() => YoOrder.OrderDate" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="reservationid" class="form-label">ReservationId:</label>
+                    <select id="reservationid" @bind="YoOrder.ReservationId" class="form-control">
+                        @foreach (var reservation in reservations)
+                        {
+                            <option value="@reservation.Id">@reservation.Id</option>
+                        }
+                    </select>
+                    <ValidationMessage For="() => YoOrder.ReservationId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="orderstatus" class="form-label">OrderStatus:</label>
+                    <InputText id="orderstatus" @bind-Value="YoOrder.OrderStatus" class="form-control" />
+                    <ValidationMessage For="() => YoOrder.OrderStatus" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="notificationid" class="form-label">NotificationId:</label>
+                    <select id="notificationid" @bind="YoOrder.NotificationId" class="form-control">
+                        @foreach (var notification in notifications)
+                        {
+                            <option value="@notification.Id">@notification.Id</option>
+                        }
+                    </select>
+                    <ValidationMessage For="() => YoOrder.NotificationId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="employeeid" class="form-label">EmployeeId:</label>
+                    <select id="employeeid" @bind="YoOrder.EmployeeId" class="form-control">
+                        @foreach (var user in users)
+                        {
+                            <option value="@user.Id">@user.UserName</option>
+                        }
+                    </select>
+                    <ValidationMessage For="() => YoOrder.EmployeeId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="cost" class="form-label">Cost:</label>
+                    <InputNumber id="cost" @bind-Value="YoOrder.Cost" class="form-control" />
+                    <ValidationMessage For="() => YoOrder.Cost" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/yoorders">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    public YoOrder? YoOrder { get; set; }
+
+    private List<YoReservation> reservations = new List<YoReservation>();
+    private List<YoNotification> notifications = new List<YoNotification>();
+    private List<ApplicationUser> users = new List<ApplicationUser>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        YoOrder ??= await DB.YoOrders.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (YoOrder is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+
+        // Получаем список резерваций
+        reservations = DB.YoReservations.ToList();
+        // Получаем список уведомлений
+        notifications = DB.YoNotifications.ToList();
+        // Получаем список пользователей
+        var allUsers = UserManager.Users.ToList();
+        users.AddRange(allUsers);
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    public async Task UpdateYoOrder()
+    {
+        DB.Attach(YoOrder!).State = EntityState.Modified;
+
+        try
+        {
+            await DB.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!YoOrderExists(YoOrder!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/yoorders");
+    }
+
+    bool YoOrderExists(int id)
+    {
+        return DB.YoOrders.Any(e => e.Id == id);
+    }
+}
