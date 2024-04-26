@@ -1,0 +1,74 @@
+﻿@page "/yousers"
+
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore;
+@using yoko.Data
+@using System.ComponentModel.DataAnnotations
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+@inject RoleManager<IdentityRole> RoleManager
+
+<PageTitle>Users Index</PageTitle>
+
+<h1>Index</h1>
+<p>
+    <a href="yousers/create">Create New</a>
+</p>
+@if (Users != null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Role</th> <!-- Added Role column -->
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Users)
+            {
+                <tr>
+                    <td>@user.Email</td>
+                    <td>@UserRoles[user.Id]</td>
+                    <td>
+                        <a href="@($"yousers/edit/{user.Id}")">Edit</a> |
+                        <a href="@($"yousers/details/{user.Id}")">Details</a> |
+                        <a href="@($"yousers/delete/{user.Id}")">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Loading users...</p>
+}
+
+@code {
+    private IEnumerable<ApplicationUser>? Users;
+    private Dictionary<string, string> UserRoles = new Dictionary<string, string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Users = await UserManager.Users.ToListAsync();
+        await LoadUserRoles();
+    }
+
+    private async Task LoadUserRoles()
+    {
+        foreach (var user in Users)
+        {
+            var roles = await UserManager.GetRolesAsync(user);
+            var roleName = roles.Any() ? roles[0] : "No Role";
+            UserRoles.Add(user.Id, roleName);
+        }
+    }
+
+    // private string GetUserRole(ApplicationUser user)
+    // {
+    //     var roles = UserManager.GetRolesAsync(user).Result;
+    //     return roles.Any() ? RoleNames.GetValueOrDefault(roles[0], "No Role") : "No Role"; // Return the name of the first role or "No Role" if none
+    // }
+}

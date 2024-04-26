@@ -1,0 +1,111 @@
+﻿@page "/yousers/edit/{userId}"
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Identity
+@using yoko.Data
+@using System.ComponentModel.DataAnnotations
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
+@inject NavigationManager NavigationManager
+
+<div>
+    <PageTitle>Edit User</PageTitle>
+
+    <h1>Edit User</h1>
+    <p>
+        <a href="yousers/create">Create New</a>
+    </p>
+    @if (User != null)
+    {
+        <EditForm method="post" Model="Input" OnValidSubmit="UpdateUser" FormName="UpdateUser" Enhance>
+            <DataAnnotationsValidator />
+            <h2>Edit user details.</h2>
+            <hr />
+            <ValidationSummary class="text-danger" />
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" />
+                <label for="email">Email</label>
+                <ValidationMessage For="() => Input.Email" class="text-danger" />
+            </div>
+            <div class="form-floating mb-3">
+                <InputSelect class="form-select" @bind-Value="Input.Role">
+                    <option value="">Select Role</option>
+                    @foreach (var role in Roles)
+                    {
+                        <option value="@role.Name">@role.Name</option>
+                    }
+                </InputSelect>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </EditForm>
+        <div>
+            <a href="/yousers">Back to List</a>
+        </div>
+    }
+    else
+    {
+        <p>Loading user...</p>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string UserId { get; set; }
+
+    private ApplicationUser? User { get; set; }
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+    private List<IdentityRole> Roles { get; set; } = new List<IdentityRole>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await UserManager.FindByIdAsync(UserId);
+        if (User != null)
+        {
+            Input.Email = User.Email;
+        }
+        else
+        {
+            // Handle not found
+        }
+        Roles = RoleManager.Roles.ToList();
+    }
+
+    private async Task UpdateUser()
+    {
+        if (User != null)
+        {
+            User.Email = Input.Email;
+
+            if (!string.IsNullOrEmpty(Input.Role))
+            {
+                var roles = await UserManager.GetRolesAsync(User);
+                await UserManager.RemoveFromRolesAsync(User, roles);
+                await UserManager.AddToRoleAsync(User, Input.Role);
+            }
+
+
+            var updateResult = await UserManager.UpdateAsync(User);
+            if (updateResult.Succeeded)
+            {
+                NavigationManager.NavigateTo("/yousers");
+            }
+            else
+            {
+                // Handle error
+            }
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [EmailAddress]
+        [Display(Name = "Email")]
+        public string Email { get; set; }
+
+        [Display(Name = "Role")]
+        public string Role { get; set; }
+
+    }
+}

@@ -1,0 +1,57 @@
+﻿@page "/yousers/delete/{userId}"
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Identity
+@using yoko.Data
+@using System.ComponentModel.DataAnnotations
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+
+<PageTitle>Delete User</PageTitle>
+
+<h1>Delete User</h1>
+
+@if (User != null)
+{
+    <p>Are you sure you want to delete user <strong>@User.Email</strong>?</p>
+    <button class="btn btn-danger" @onclick="DeleteUser">Delete</button>
+    <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    <div>
+        <a href="/yousers">Back to List</a>
+    </div>
+}
+else
+{
+    <p>User not found.</p>
+}
+@code {
+    [Parameter]
+    public string UserId { get; set; }
+
+    private ApplicationUser? User { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await UserManager.FindByIdAsync(UserId);
+    }
+
+    private async Task DeleteUser()
+    {
+        if (User != null)
+        {
+            var result = await UserManager.DeleteAsync(User);
+            if (result.Succeeded)
+            {
+                NavigationManager.NavigateTo("/yousers");
+            }
+            else
+            {
+                // Handle error
+            }
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/yousers");
+    }
+}

@@ -1,0 +1,117 @@
+﻿@page "/yousers/create"
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Identity
+@using yoko.Data
+@using System.Collections.Generic
+@using System.ComponentModel.DataAnnotations
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create User</PageTitle>
+
+<h1>Create User</h1>
+
+<div class="row">
+    <div class="col-md-4">
+            <EditForm method="post" Model="Input" OnValidSubmit="CreateUser" FormName="createUser" Enhance>
+                <DataAnnotationsValidator />
+                <h2>Enter user details.</h2>
+                <hr />
+                <ValidationSummary class="text-danger" />
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" placeholder="name@example.com" />
+                    <label for="email">Email</label>
+                    <ValidationMessage For="() => Input.Email" class="text-danger" />
+                </div>
+                <div class="form-floating mb-3">
+                    <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="new-password" placeholder="password" />
+                    <label for="password">Password</label>
+                    <ValidationMessage For="() => Input.Password" class="text-danger" />
+                </div>
+                <div class="form-floating mb-3">
+                    <InputText type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" placeholder="password" />
+                    <label for="confirm-password">Confirm Password</label>
+                    <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
+                </div>
+                <div class="form-floating mb-3">
+                    <InputSelect class="form-select" @bind-Value="Input.Role">
+                        <option value="">Select Role</option>
+                        @foreach (var role in Roles)
+                        {
+                            <option value="@role.Name">@role.Name</option>
+                        }
+                    </InputSelect>
+                    
+                </div>
+                <button type="submit" class="w-100 btn btn-lg btn-primary">Create User</button>
+            </EditForm>
+    </div>
+</div>
+<div>
+    <a href="/yousers">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+    private List<IdentityRole> Roles { get; set; } = new List<IdentityRole>();
+
+    protected override void OnInitialized()
+    {
+        Roles = RoleManager.Roles.ToList();
+    }
+
+    private async Task CreateUser()
+    {
+        var user = new ApplicationUser { UserName = Input.Email, Email = Input.Email };
+        var result = await UserManager.CreateAsync(user, Input.Password);
+
+        if (result.Succeeded)
+        {
+            if (!string.IsNullOrEmpty(Input.Role))
+            {
+                var roleExists = await RoleManager.RoleExistsAsync(Input.Role);
+                if (roleExists)
+                {
+                    await UserManager.AddToRoleAsync(user, Input.Role);
+                }
+                else
+                {
+                    // Handle role not found
+                }
+            }
+
+            NavigationManager.NavigateTo("/yousers"); // Redirect to users index page after successful creation
+        }
+        else
+        {
+            foreach (var error in result.Errors)
+            {
+                // Handle errors, display to user or log
+            }
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [EmailAddress]
+        [Display(Name = "Email")]
+        public string Email { get; set; }
+
+        [Required]
+        [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+        [DataType(DataType.Password)]
+        [Display(Name = "Password")]
+        public string Password { get; set; }
+
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirm password")]
+        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        public string ConfirmPassword { get; set; }
+
+        [Display(Name = "Role")]
+        public string Role { get; set; }
+    }
+}

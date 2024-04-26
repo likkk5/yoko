@@ -2,6 +2,9 @@
 @inject yoko.Data.ApplicationDbContext DB
 @using yoko.Data
 @inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Identity
+@inject RoleManager<IdentityRole> roleManager
+@inject UserManager<ApplicationUser> UserManager
 
 <PageTitle>Create</PageTitle>
 
@@ -16,12 +19,12 @@
             <ValidationSummary class="text-danger" />
             <div class="mb-3">
                 <label for="orderid" class="form-label">OrderId:</label>
-                <select id="orderid" @bind="YoNotification.OrderId" class="form-control">
+                <InputSelect id="orderid" @bind-Value="YoNotification.OrderId" class="form-select">
                     @foreach (var order in orders)
                     {
                         <option value="@order.Id">@order.Id</option>
                     }
-                </select>
+                </InputSelect>
                 <ValidationMessage For="() => YoNotification.OrderId" class="text-danger" />
             </div>
             <div class="mb-3">
@@ -50,6 +53,7 @@
     {
         // Получаем список гостей
         orders = DB.YoOrders.ToList();
+        YoNotification.NotificationDateTime = DateTime.Now;
     }
     [SupplyParameterFromForm]
     public YoNotification YoNotification { get; set; } = new();

@@ -11,7 +11,8 @@ namespace yoko.Data
         public DateTime OrderDate { get; set; }
         public int? ReservationId { get; set; }
         //public List<YoService> ServicesInOrders { get; set; }
-        public string OrderStatus { get; set; }
+        public OrderStatus OrderStatus { get; set; }
+       
         public int? NotificationId { get; set; }
         public string? EmployeeId { get; set; }
         public double Cost { get; set; }
@@ -24,5 +25,12 @@ namespace yoko.Data
 
         [ForeignKey("EmployeeId")]
         public virtual ApplicationUser Employee { get; set; }
+    }
+    public enum OrderStatus
+    {
+        Consideration,
+        Confirmed,
+        Completed,
+        Canceled
     }
 }

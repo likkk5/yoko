@@ -24,12 +24,12 @@ else
                 <input type="hidden" name="YoNotification.Id" value="@YoNotification.Id" />
                 <div class="mb-3">
                     <label for="orderid" class="form-label">OrderId:</label>
-                    <select id="orderid" @bind="YoNotification.OrderId" class="form-control">
+                    <InputSelect id="orderid" @bind-Value="YoNotification.OrderId" class="form-select">
                         @foreach (var order in orders)
                         {
                             <option value="@order.Id">@order.Id</option>
                         }
-                    </select>
+                    </InputSelect>
                     <ValidationMessage For="() => YoNotification.OrderId" class="text-danger" />
                 </div>
                 <div class="mb-3">

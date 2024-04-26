@@ -1,0 +1,56 @@
+﻿@page "/yoroles/create"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@using System.ComponentModel.DataAnnotations
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
+
+<PageTitle>Create</PageTitle>
+<h1>Create</h1>
+
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Input" OnValidSubmit="CreateRole" FormName="createRole" Enhance>
+            <DataAnnotationsValidator />
+            <h2>Create a new role.</h2>
+            <hr />
+            <ValidationSummary class="text-danger" />
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.Name" class="form-control" />
+                <label for="roleName">Role Name</label>
+                <ValidationMessage For="() => Input.Name" class="text-danger" />
+            </div>
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+<div>
+    <a href="/yoroles">Back to List</a>
+</div>
+
+@code {
+    private IEnumerable<IdentityError>? identityErrors;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+    public async Task CreateRole()
+    {
+        var role = new IdentityRole { Name = Input.Name };
+        var result = await RoleManager.CreateAsync(role);
+
+        if (!result.Succeeded)
+        {
+            identityErrors = result.Errors;
+            return;
+        }
+
+        NavigationManager.NavigateTo("/yoroles");
+    }
+
+    private sealed class InputModel
+    {
+        public string Name { get; set; } = "";
+    }
+}

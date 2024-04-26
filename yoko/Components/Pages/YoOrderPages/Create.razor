@@ -23,27 +23,32 @@
             </div>
             <div class="mb-3">
                 <label for="reservationid" class="form-label">ReservationId:</label>
-                <select id="reservationid" @bind="YoOrder.ReservationId" class="form-control">
+                <InputSelect id="reservationid" @bind-Value="YoOrder.ReservationId" class="form-select">
                     @foreach (var reservation in reservations)
                     {
                         <option value="@reservation.Id">@reservation.Id</option>
                     }
-                </select>
+                </InputSelect>
                 <ValidationMessage For="() => YoOrder.ReservationId" class="text-danger" />
             </div>
             <div class="mb-3">
-                <label for="orderstatus" class="form-label">OrderStatus:</label> 
-                <InputText id="orderstatus" @bind-Value="YoOrder.OrderStatus" class="form-control" /> 
-                <ValidationMessage For="() => YoOrder.OrderStatus" class="text-danger" /> 
+                <label for="orderstatus" class="form-label">OrderStatus:</label>
+                <InputSelect id="orderstatus" @bind-Value="YoOrder.OrderStatus" class="form-select">
+                    @foreach (OrderStatus status in Enum.GetValues(typeof(OrderStatus)))
+                    {
+                        <option value="@status">@status</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => YoOrder.OrderStatus" class="text-danger" />
             </div>
             <div class="mb-3">
                 <label for="notificationid" class="form-label">NotificationId:</label>
-                <select id="notificationid" @bind="YoOrder.NotificationId" class="form-control">
+                <InputSelect id="notificationid" @bind-Value="YoOrder.NotificationId" class="form-select">
                     @foreach (var notification in notifications)
                     {
                         <option value="@notification.Id">@notification.Id</option>
                     }
-                </select>
+                </InputSelect>
                 <ValidationMessage For="() => YoOrder.NotificationId" class="text-danger" />
             </div>
           @*   <div class="mb-3">
@@ -53,12 +58,12 @@
             </div> *@   
             <div class="mb-3">
                 <label for="employeeid" class="form-label">EmployeeId:</label>
-                <select id="employeeid" @bind="YoOrder.EmployeeId" class="form-control">
+                <InputSelect id="employeeid" @bind-Value="YoOrder.EmployeeId" class="form-select">
                     @foreach (var user in users)
                     {
                         <option value="@user.Id">@user.UserName</option>
                     }
-                </select>
+                </InputSelect>
                 <ValidationMessage For="() => YoOrder.EmployeeId" class="text-danger" />
             </div>
             <div class="mb-3">

@@ -52,12 +52,12 @@
             </div>
             <div class="mb-3">
                 <label for="guestid" class="form-label">GuestId:</label>
-                <select id="guestid" @bind="YoReservation.GuestId" class="form-control">
+                <InputSelect id="guestid" @bind-Value="YoReservation.GuestId" class="form-select">
                     @foreach (var guest in guests)
                     {
                         <option value="@guest.Id">@guest.Id</option>
                     }
-                </select>
+                </InputSelect>
                 <ValidationMessage For="() => YoReservation.GuestId" class="text-danger" />
             </div>
             <button type="submit" class="btn btn-primary">Create</button>

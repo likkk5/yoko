@@ -1,0 +1,58 @@
+﻿@page "/yoroles/edit/{roleId}"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@using Microsoft.AspNetCore.Identity
+@using System.ComponentModel.DataAnnotations
+@inject RoleManager<IdentityRole> RoleManager
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit Role</PageTitle>
+<h1>Edit Role</h1>
+
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Input" OnValidSubmit="UpdateRole" FormName="editRole" Enhance>
+            <h2>Edit role @Input.Name</h2>
+            <hr />
+            <ValidationSummary class="text-danger" />
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.Name" class="form-control" />
+                <label for="roleName">Role Name</label>
+                <ValidationMessage For="() => Input.Name" class="text-danger" />
+            </div>
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Update</button>
+        </EditForm>
+    </div>
+</div>
+<div>
+    <a href="/yoroles">Back to List</a>
+</div>
+@code {
+    private IdentityRole Role { get; set; }
+    private InputModel Input { get; set; } = new();
+
+    [Parameter]
+    public string RoleId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Role = await RoleManager.FindByIdAsync(RoleId);
+    }
+
+    public async Task UpdateRole()
+    {
+        if (Role != null)
+        {
+            Role.Name = Input.Name;
+            var result = await RoleManager.UpdateAsync(Role);          
+            NavigationManager.NavigateTo("/yoroles");
+
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        public string Name { get; set; }
+    }
+}

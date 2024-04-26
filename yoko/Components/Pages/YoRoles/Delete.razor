@@ -1,0 +1,56 @@
+﻿@page "/yoroles/delete/{roleId}"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@using System.ComponentModel.DataAnnotations
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
+
+<PageTitle>Delete</PageTitle>
+<h1>Delete Role</h1>
+
+@if (Role is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <p>Are you sure you want to delete role "@Role.Name"?</p>
+            <button type="button" class="btn btn-danger" @onclick="DeleteRole">Delete</button>
+            <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+        </div>
+    </div>
+    <div>
+        <a href="/yoroles">Back to List</a>
+    </div>
+}
+
+@code {
+    private IdentityRole Role { get; set; }
+
+    [Parameter]
+    public string RoleId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Role = await RoleManager.FindByIdAsync(RoleId);
+    }
+
+    private async Task DeleteRole()
+    {
+        if (Role != null)
+        {
+            var result = await RoleManager.DeleteAsync(Role);
+            NavigationManager.NavigateTo("/yoroles");
+
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/yoroles");
+    }
+}

@@ -33,12 +33,12 @@
             </div> *@      
             <div class="mb-3">
                 <label for="userid" class="form-label">UserId:</label>
-                <select id="userid" @bind="YoGuest.UserId" class="form-control">
+                <InputSelect id="userid" @bind-Value="YoGuest.UserId" class="form-select">
                     @foreach (var user in users)
                     {
                         <option value="@user.Id">@user.UserName</option>
                     }
-                </select>
+                </InputSelect>
                 <ValidationMessage For="() => YoGuest.UserId" class="text-danger" />
             </div>
             <button type="submit" class="btn btn-primary">Create</button>
