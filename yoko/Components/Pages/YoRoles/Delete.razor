@@ -16,13 +16,10 @@
 }
 else
 {
-    <div class="row">
-        <div class="col-md-4">
-            <p>Are you sure you want to delete role "@Role.Name"?</p>
-            <button type="button" class="btn btn-danger" @onclick="DeleteRole">Delete</button>
-            <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
-        </div>
-    </div>
+    <EditForm method="post" Model="RoleManager" OnValidSubmit="DeleteRole" FormName="delete" Enhance>
+        <p>Are you sure you want to delete role "@Role.Name"?</p>
+        <button type="submit" class="btn btn-danger" disabled="@(Role is null)">Delete</button> 
+    </EditForm>
     <div>
         <a href="/yoroles">Back to List</a>
     </div>
@@ -47,10 +44,5 @@ else
             NavigationManager.NavigateTo("/yoroles");
 
         }
-    }
-
-    private void Cancel()
-    {
-        NavigationManager.NavigateTo("/yoroles");
     }
 }

@@ -12,9 +12,10 @@
 
 @if (User != null)
 {
-    <p>Are you sure you want to delete user <strong>@User.Email</strong>?</p>
-    <button class="btn btn-danger" @onclick="DeleteUser">Delete</button>
-    <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    <EditForm method="post" Model="UserManager" OnValidSubmit="DeleteUser" FormName="delete" Enhance>
+        <p>Are you sure you want to delete user <strong>@User.Email</strong>?</p>
+        <button type="submit" class="btn btn-danger" disabled="@(User is null)">Delete</button> 
+    </EditForm>
     <div>
         <a href="/yousers">Back to List</a>
     </div>
@@ -24,6 +25,7 @@ else
     <p>User not found.</p>
 }
 @code {
+    // [SupplyParameterFromQuery]
     [Parameter]
     public string UserId { get; set; }
 
@@ -48,10 +50,5 @@ else
                 // Handle error
             }
         }
-    }
-
-    private void Cancel()
-    {
-        NavigationManager.NavigateTo("/yousers");
     }
 }

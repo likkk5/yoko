@@ -22,7 +22,7 @@
             <hr />
             <ValidationSummary class="text-danger" />
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" />
+                <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username"/>
                 <label for="email">Email</label>
                 <ValidationMessage For="() => Input.Email" class="text-danger" />
             </div>
@@ -48,14 +48,15 @@
 </div>
 
 @code {
-    [Parameter]
-    public string UserId { get; set; }
-
-    private ApplicationUser? User { get; set; }
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
     private List<IdentityRole> Roles { get; set; } = new List<IdentityRole>();
+
+    [Parameter]
+    public string UserId { get; set; }
+
+    private ApplicationUser? User { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -63,12 +64,12 @@
         if (User != null)
         {
             Input.Email = User.Email;
+            Roles = RoleManager.Roles.ToList();
         }
         else
         {
             // Handle not found
         }
-        Roles = RoleManager.Roles.ToList();
     }
 
     private async Task UpdateUser()

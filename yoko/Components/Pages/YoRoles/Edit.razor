@@ -29,6 +29,8 @@
 </div>
 @code {
     private IdentityRole Role { get; set; }
+
+    [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
 
     [Parameter]

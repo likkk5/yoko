@@ -6,6 +6,13 @@
 @using Microsoft.AspNetCore.Identity
 @inject RoleManager<IdentityRole> RoleManager
 
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
+
+<AuthorizeView>
+    Hello @context.User.Identity?.Name
+</AuthorizeView>
+
 <PageTitle>Index</PageTitle>
 
 <h1>Index</h1>
@@ -47,7 +54,7 @@
                     <td>@role.Name</td>
                     <td>
                         <a href="@($"yoroles/edit/{role.Id}")">Edit</a> |
-                        <a href="@($"yoroles/details/{role.Id}")">Details</a> |
+                       @*  <a href="@($"yoroles/details/{role.Id}")">Details</a> | *@
                         <a href="@($"yoroles/delete/{role.Id}")">Delete</a>
                     </td>
                 </tr>
