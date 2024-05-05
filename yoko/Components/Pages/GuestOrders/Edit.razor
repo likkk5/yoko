@@ -1,0 +1,176 @@
+﻿@page "/guestorders/edit/{orderId}"
+@inject yoko.Data.ApplicationDbContext DB
+@using yoko.Data
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
+@using System.Linq
+
+<PageTitle>Edit Order</PageTitle>
+
+<h1>Edit Order</h1>
+
+@if (Order != null)
+{
+    <h4>Order Information</h4>
+    <hr />
+    <dl>
+        <dt>Order Date:</dt>
+        <dd>@Order.OrderDate</dd>
+        <dt>Order Status:</dt>
+        <dd>@Order.OrderStatus</dd>
+        <dt>Total Cost:</dt>
+        <dd>$@Order.Cost</dd>
+    </dl>
+
+    <h4>Selected Services</h4>
+    <hr />
+    <div>
+        @foreach (var service in services)
+        {
+            <div class="form-check">
+                <input id="@service.Id" type="checkbox" checked="@IsServiceSelected[service.Id]" @onchange="e => ToggleServiceSelection(service.Id)" class="form-check-input" />
+                <label class="form-check-label" for="@service.Id">@service.Name - $@service.Cost</label>
+            </div>
+        }
+    </div>
+
+    <p>Selected Services Count: @SelectedServicesCount</p>
+    <p>Total Order Cost: $@TotalOrderCost</p>
+
+    <button class="btn btn-primary" @onclick="UpdateOrder">Save Changes</button>
+}
+else
+{
+    <p>Order not found.</p>
+}
+
+<div>
+    <a href="/guestorders">Back to List</a>
+</div>
+
+@code {
+
+    [Parameter]
+    public string orderId { get; set; }
+
+    private YoOrder Order { get; set; }
+    private List<YoService> services = new List<YoService>();
+    private Dictionary<int, bool> IsServiceSelected { get; set; } = new Dictionary<int, bool>();
+    private int SelectedServicesCount { get; set; }
+    private double TotalOrderCost { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // Загрузка данных заказа
+        int id;
+        if (int.TryParse(orderId, out id))
+        {
+            Order = DB.YoOrders.FirstOrDefault(order => order.Id == id);
+        }
+
+        // Загрузка списка доступных услуг
+        services = DB.YoServices.ToList();
+
+        // Инициализация словаря для отслеживания выбранных услуг
+        foreach (var service in services)
+        {
+            IsServiceSelected[service.Id] = false;
+        }
+
+        // Установка значений выбранных услуг, если они есть в заказе
+        if (Order != null)
+        {
+            var selectedServices = DB.YoServiceinOrders
+                .Where(so => so.OrderId == Order.Id)
+                .Select(so => so.ServiceId)
+                .ToList();
+
+            foreach (var serviceId in selectedServices)
+            {
+                if (IsServiceSelected.ContainsKey(serviceId))
+                {
+                    IsServiceSelected[serviceId] = true;
+                }
+            }
+        }
+
+        // Обновление счетчика выбранных услуг и общей стоимости заказа
+        UpdateSelectedServicesCount();
+        UpdateTotalOrderCost();
+    }
+
+    private void ToggleServiceSelection(int serviceId)
+    {
+        IsServiceSelected[serviceId] = !IsServiceSelected[serviceId];
+        UpdateSelectedServicesCount();
+        UpdateTotalOrderCost();
+    }
+
+    private void UpdateSelectedServicesCount()
+    {
+        SelectedServicesCount = IsServiceSelected.Count(kvp => kvp.Value);
+    }
+
+    private void UpdateTotalOrderCost()
+    {
+        TotalOrderCost = 0;
+        foreach (var kvp in IsServiceSelected)
+        {
+            if (kvp.Value)
+            {
+                var selectedService = services.FirstOrDefault(s => s.Id == kvp.Key);
+                if (selectedService != null)
+                {
+                    TotalOrderCost += selectedService.Cost;
+                }
+            }
+        }
+    }
+
+    private async Task UpdateOrder()
+    {
+        if (Order != null)
+        {
+            try
+            {
+                // Обновление данных заказа
+                Order.Cost = TotalOrderCost;
+
+                // Удаление всех услуг из заказа
+                var existingServices = DB.YoServiceinOrders.Where(so => so.OrderId == Order.Id);
+                DB.YoServiceinOrders.RemoveRange(existingServices);
+
+                // Добавление выбранных услуг в заказ
+                foreach (var kvp in IsServiceSelected)
+                {
+                    if (kvp.Value)
+                    {
+                        var selectedService = services.FirstOrDefault(s => s.Id == kvp.Key);
+                        if (selectedService != null)
+                        {
+                            var serviceInOrder = new YoServiceinOrder
+                                {
+                                    ServiceId = selectedService.Id,
+                                    OrderId = Order.Id
+                                };
+                            DB.YoServiceinOrders.Add(serviceInOrder);
+                        }
+                    }
+                }
+
+                await DB.SaveChangesAsync();
+
+                // Перенаправление на страницу со списком заказов
+                NavigationManager.NavigateTo("/guestorders");
+            }
+            catch (Exception e)
+            {
+                // Обработка ошибки при сохранении изменений
+                Console.WriteLine($"An error occurred while updating the order: {e.Message}");
+            }
+        }
+    }
+}

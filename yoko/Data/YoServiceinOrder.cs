@@ -10,10 +10,9 @@ namespace yoko.Data
         public int Id { get; set; }
         public int ServiceId { get; set; }
         public int OrderId { get; set; }
-        public string EmployeeId { get; set; }
+        public string? EmployeeId { get; set; }
         public int Amount { get; set; }
 
-        // Добавьте внешний ключ для связи с классом YoService
         [ForeignKey("ServiceId")]
         public virtual YoService YoService { get; set; }
 

@@ -25,3 +25,5 @@
         <a href="@($"yoorders/delete?id={yoorder.Id}")">Delete</a>
     </TemplateColumn>
 </QuickGrid>
+        @* user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        var roles = await UserManager.GetRolesAsync(user); *@

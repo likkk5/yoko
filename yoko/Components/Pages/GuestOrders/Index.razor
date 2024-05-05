@@ -1,0 +1,84 @@
+﻿@page "/guestorders"
+@using System.ComponentModel.DataAnnotations
+@using System.Text
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.EntityFrameworkCore
+@using yoko.Data
+@using yoko.Components.Account
+
+@inject yoko.Data.ApplicationDbContext DB
+@inject IdentityUserAccessor UserAccessor
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+@inject RoleManager<IdentityRole> RoleManager
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="guestorders/create">Create New</a>
+</p>
+
+@if (UserOrders != null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Order Date</th>
+                <th>Order Status</th>
+                <th>TotalCost</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in UserOrders)
+            {
+                <tr>
+                    <td>@order.OrderDate</td>
+                    <td>@order.OrderStatus</td>
+                    <td>@order.Cost</td>
+                    <td>
+                        <a href="@($"guestorders/edit/{order.Id}")">Edit</a> |
+                        <a href="@($"guestorders/details/{order.Id}")">Details</a> |
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Loading orders...</p>
+}
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@code {
+
+    private List<YoOrder>? UserOrders;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var currentUser = authState.User;
+
+        if (currentUser.Identity != null && currentUser.Identity.IsAuthenticated)
+        {
+            var userManager = (UserManager<ApplicationUser>)UserManager;
+            var user = await userManager.GetUserAsync(currentUser);
+
+            if (user != null)
+            {
+                var guest = DB.YoGuests.First(c => c.UserId == user.Id);
+                var reservation = DB.YoReservations.OrderByDescending(o => o.Id).First(c => c.GuestId == guest.Id);
+                UserOrders = await DB.YoOrders
+                    .Where(order => order.ReservationId == reservation.Id)
+                    .ToListAsync();
+            }
+        }
+
+        
+    }
+}

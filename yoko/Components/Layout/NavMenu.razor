@@ -35,58 +35,71 @@
                 <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Auth Required
             </NavLink>
         </div>
+        <AuthorizeView Roles="user">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="guestorders">
+                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> GuestOrders
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+            
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="yoservices">
+                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Services
+                    </NavLink>
+                </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="yoservices">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Services
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="yorooms">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Rooms
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="yoguests">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Guests
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="yoreservations">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Reservations
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="yofeedbacks">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Feedbacks
-            </NavLink>
-        </div> 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="yoserviceinorders">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> ServiceInOrders
-            </NavLink>
-        </div>
-         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="yonotifications">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Notifications
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="yoorders">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Orders
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="yoroles">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Roles
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="yousers">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Users
-            </NavLink>
-        </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="yorooms">
+                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Rooms
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="yoguests">
+                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Guests
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="yoreservations">
+                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Reservations
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="yofeedbacks">
+                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Feedbacks
+                    </NavLink>
+                </div> 
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="yoserviceinorders">
+                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> ServiceInOrders
+                    </NavLink>
+                </div>
+                 <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="yonotifications">
+                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Notifications
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="yoorders">
+                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Orders
+                    </NavLink>
+                </div>      
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="yoroles">
+                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Roles
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="yousers">
+                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Users
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
 
         <AuthorizeView>
             <Authorized>
