@@ -27,7 +27,11 @@
             <dd class="col-sm-10">@yoroom.RoomStatus</dd>
         </dl>
         <div>
-            <a href="@($"/yorooms/edit?id={yoroom.Id}")">Edit</a> |
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+                    <a href="@($"/yorooms/edit?id={yoroom.Id}")">Edit</a> |
+                </Authorized>
+            </AuthorizeView>
             <a href="@($"/yorooms")">Back to List</a>
         </div>
     }

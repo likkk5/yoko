@@ -46,16 +46,22 @@
         </AuthorizeView>
         <AuthorizeView Roles="user, Admin">
             <Authorized>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="yoreservations">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Reservations
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="yofeedbacks">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Feedbacks
-            </NavLink>
-        </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="yoreservations">
+                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Reservations
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="yorooms">
+                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Rooms
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="yofeedbacks">
+                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Feedbacks
+                    </NavLink>
+                </div>
+        
             </Authorized>
         </AuthorizeView>
         <AuthorizeView Roles="Admin">
@@ -63,12 +69,6 @@
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="yoservices">
                         <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Services
-                    </NavLink>
-                </div>
-
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="yorooms">
-                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Rooms
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">

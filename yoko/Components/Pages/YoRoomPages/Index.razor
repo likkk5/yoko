@@ -6,10 +6,13 @@
 <PageTitle>Index</PageTitle>
 
 <h1>Index</h1>
-
-<p>
-    <a href="yorooms/create">Create New</a>
-</p>
+<AuthorizeView Roles="Admin">
+     <Authorized>
+        <p>
+            <a href="yorooms/create">Create New</a>
+        </p>
+    </Authorized>
+</AuthorizeView>
 
 <QuickGrid Class="table" Items="DB.YoRooms">
     <PropertyColumn Property="yoroom => yoroom.RoomNumber" />
@@ -18,8 +21,16 @@
     <PropertyColumn Property="yoroom => yoroom.RoomStatus" />
 
     <TemplateColumn Context="yoroom">
+        <AuthorizeView Roles="Admin">
+            <Authorized>
         <a href="@($"yorooms/edit?id={yoroom.Id}")">Edit</a> |
-        <a href="@($"yorooms/details?id={yoroom.Id}")">Details</a> |
-        <a href="@($"yorooms/delete?id={yoroom.Id}")">Delete</a>
+            </Authorized>
+        </AuthorizeView>
+        <a href="@($"yorooms/details?id={yoroom.Id}")">Details</a>
+         <AuthorizeView Roles="Admin">
+            <Authorized>
+        | <a href="@($"yorooms/delete?id={yoroom.Id}")">Delete</a>
+            </Authorized>
+        </AuthorizeView>
     </TemplateColumn>
 </QuickGrid>

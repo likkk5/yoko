@@ -19,17 +19,23 @@
         <dl class="row">
             <dt class="col-sm-2">FeedbackDate</dt>
             <dd class="col-sm-10">@yofeedback.FeedbackDate</dd>
-            <dt class="col-sm-2">FeedbackTime</dt>
-            <dd class="col-sm-10">@yofeedback.FeedbackTime</dd>
             <dt class="col-sm-2">FeedbackText</dt>
             <dd class="col-sm-10">@yofeedback.FeedbackText</dd>
             <dt class="col-sm-2">Rating</dt>
             <dd class="col-sm-10">@yofeedback.Rating</dd>
-            <dt class="col-sm-2">GuestId</dt>
-            <dd class="col-sm-10">@yofeedback.GuestId</dd>
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+                    <dt class="col-sm-2">GuestId</dt>
+                    <dd class="col-sm-10">@yofeedback.GuestId</dd>
+                </Authorized>
+            </AuthorizeView>
         </dl>
         <div>
+            <AuthorizeView Roles="Admin">
+                <Authorized>
             <a href="@($"/yofeedbacks/edit?id={yofeedback.Id}")">Edit</a> |
+                </Authorized>
+            </AuthorizeView>
             <a href="@($"/yofeedbacks")">Back to List</a>
         </div>
     }

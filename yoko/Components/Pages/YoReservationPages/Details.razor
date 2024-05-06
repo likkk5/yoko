@@ -29,11 +29,19 @@
             <dd class="col-sm-10">@yoreservation.ReservationStatus</dd>
             <dt class="col-sm-2">Cost</dt>
             <dd class="col-sm-10">@yoreservation.Cost</dd>
-            <dt class="col-sm-2">GuestId</dt>
-            <dd class="col-sm-10">@yoreservation.GuestId</dd>
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+                    <dt class="col-sm-2">GuestId</dt>
+                    <dd class="col-sm-10">@yoreservation.GuestId</dd>
+                </Authorized>
+            </AuthorizeView>
         </dl>
         <div>
-            <a href="@($"/yoreservations/edit?id={yoreservation.Id}")">Edit</a> |
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+                    <a href="@($"/yoreservations/edit?id={yoreservation.Id}")">Edit</a> |
+                </Authorized>
+            </AuthorizeView>
             <a href="@($"/yoreservations")">Back to List</a>
         </div>
     }
