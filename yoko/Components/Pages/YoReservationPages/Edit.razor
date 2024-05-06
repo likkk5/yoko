@@ -3,6 +3,9 @@
 @using yoko.Data
 @inject NavigationManager NavigationManager
 @using Microsoft.EntityFrameworkCore
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
 
 <PageTitle>Edit</PageTitle>
 
@@ -22,11 +25,11 @@ else
                 <DataAnnotationsValidator />
                 <ValidationSummary />
                 <input type="hidden" name="YoReservation.Id" value="@YoReservation.Id" />
-                <div class="mb-3">
+                @* <div class="mb-3">
                     <label for="reservationdate" class="form-label">ReservationDate:</label>
                     <InputDate id="reservationdate" @bind-Value="YoReservation.ReservationDate" class="form-control" />
                     <ValidationMessage For="() => YoReservation.ReservationDate" class="text-danger" />
-                </div>
+                </div> *@
                 <div class="mb-3">
                     <label for="checkindate" class="form-label">CheckInDate:</label>
                     <InputDate id="checkindate" @bind-Value="YoReservation.CheckInDate" class="form-control" />
@@ -44,7 +47,7 @@ else
                 </div>
                 <div class="mb-3">
                     <label for="reservationstatus" class="form-label">ReservationStatus:</label>
-                    <InputSelect id="reservationstatus" @bind-Value="YoReservation.ReservationStatus" class="form-select">
+                    <InputSelect id="reservationstatus" @bind-Value="YoReservation.ReservationStatus" class="form-select" disabled="@IsUser">
                         @foreach (var item in Enum.GetValues(typeof(ReservationStatus)))
                         {
 
@@ -60,7 +63,7 @@ else
                 </div>
                 <div class="mb-3">
                     <label for="guestid" class="form-label">GuestId:</label>
-                    <InputSelect id="guestid" @bind-Value="YoReservation.GuestId" class="form-select">
+                    <InputSelect id="guestid" @bind-Value="YoReservation.GuestId" class="form-select" disabled="@IsUser">
                         @foreach (var guest in guests)
                         {
                             <option value="@guest.Id">@guest.Id</option>
@@ -84,6 +87,8 @@ else
 
     [SupplyParameterFromForm]
     public YoReservation? YoReservation { get; set; }
+    private bool IsUser { get; set; } = false;
+
 
     private List<YoGuest> guests = new List<YoGuest>();
 
@@ -97,27 +102,49 @@ else
         }
         // Получаем список гостей
         guests = DB.YoGuests.ToList();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var currentUser = authState.User;
+        if (currentUser.Identity != null && currentUser.Identity.IsAuthenticated)
+        {
+            var userManager = (UserManager<ApplicationUser>)UserManager;
+            var user = await userManager.GetUserAsync(currentUser);
+            if (user != null)
+            {
+                // Проверка роли пользователя
+                IsUser = await userManager.IsInRoleAsync(user, "user");
+            }
+        }
     }
 
     // To protect from overposting attacks, enable the specific properties you want to bind to.
     // For more details, see https://aka.ms/RazorPagesCRUD.
     public async Task UpdateYoReservation()
     {
-        DB.Attach(YoReservation!).State = EntityState.Modified;
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var currentUser = authState.User;
+        if (currentUser.Identity != null && currentUser.Identity.IsAuthenticated)
+        {
+            var userManager = (UserManager<ApplicationUser>)UserManager;
+            var user = await userManager.GetUserAsync(currentUser);
+            var guest = DB.YoGuests.First(c => c.UserId == user.Id);
+            YoReservation.GuestId = guest.Id;
+            YoReservation.ReservationDate = DateTime.Now;
+            DB.Attach(YoReservation!).State = EntityState.Modified;
 
-        try
-        {
-            await DB.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!YoReservationExists(YoReservation!.Id))
+            try
             {
-                NavigationManager.NavigateTo("notfound");
+                await DB.SaveChangesAsync();
             }
-            else
+            catch (DbUpdateConcurrencyException)
             {
-                throw;
+                if (!YoReservationExists(YoReservation!.Id))
+                {
+                    NavigationManager.NavigateTo("notfound");
+                }
+                else
+                {
+                    throw;
+                }
             }
         }
 

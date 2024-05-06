@@ -13,14 +13,21 @@
 
 <QuickGrid Class="table" Items="DB.YoFeedbacks">
     <PropertyColumn Property="yofeedback => yofeedback.FeedbackDate" />
-    <PropertyColumn Property="yofeedback => yofeedback.FeedbackTime" />
     <PropertyColumn Property="yofeedback => yofeedback.FeedbackText" />
     <PropertyColumn Property="yofeedback => yofeedback.Rating" />
-    <PropertyColumn Property="yofeedback => yofeedback.GuestId" />
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                <PropertyColumn Property="yofeedback => yofeedback.GuestId" />
+        </Authorized>
+    </AuthorizeView>
 
     <TemplateColumn Context="yofeedback">
         <a href="@($"yofeedbacks/edit?id={yofeedback.Id}")">Edit</a> |
-        <a href="@($"yofeedbacks/details?id={yofeedback.Id}")">Details</a> |
-        <a href="@($"yofeedbacks/delete?id={yofeedback.Id}")">Delete</a>
+        <a href="@($"yofeedbacks/details?id={yofeedback.Id}")">Details</a>
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+        | <a href="@($"yofeedbacks/delete?id={yofeedback.Id}")">Delete</a>
+            </Authorized>
+        </AuthorizeView>
     </TemplateColumn>
 </QuickGrid>

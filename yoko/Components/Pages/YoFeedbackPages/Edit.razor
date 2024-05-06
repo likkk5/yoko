@@ -3,6 +3,9 @@
 @using yoko.Data
 @inject NavigationManager NavigationManager
 @using Microsoft.EntityFrameworkCore
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
 
 <PageTitle>Edit</PageTitle>
 
@@ -22,11 +25,11 @@ else
                 <DataAnnotationsValidator />
                 <ValidationSummary />
                 <input type="hidden" name="YoFeedback.Id" value="@YoFeedback.Id" />
-                <div class="mb-3">
+                @* <div class="mb-3">
                     <label for="feedbackdate" class="form-label">FeedbackDate:</label>
                     <InputDate id="feedbackdate" @bind-Value="YoFeedback.FeedbackDate" class="form-control" />
                     <ValidationMessage For="() => YoFeedback.FeedbackDate" class="text-danger" />
-                </div>
+                </div> *@
                 @* <div class="mb-3">
                     <label for="feedbacktime" class="form-label">FeedbackTime:</label>
                     <InputDate id="feedbacktime" @bind-Value="YoFeedback.FeedbackTime" class="form-control" />
@@ -44,12 +47,12 @@ else
                 </div>
                 <div class="mb-3">
                     <label for="guestid" class="form-label">GuestId:</label>
-                    <select id="guestid" @bind="YoFeedback.GuestId" class="form-control">
+                    <InputSelect id="guestid" @bind-Value="YoFeedback.GuestId" class="form-select" disabled="@IsUser">
                         @foreach (var guest in guests)
                         {
                             <option value="@guest.Id">@guest.Id</option>
                         }
-                    </select>
+                    </InputSelect>
                     <ValidationMessage For="() => YoFeedback.GuestId" class="text-danger" />
                 </div>
                 <button type="submit" class="btn btn-primary">Save</button>
@@ -69,13 +72,11 @@ else
     [SupplyParameterFromForm]
     public YoFeedback? YoFeedback { get; set; }
 
+    private bool IsUser { get; set; } = false;
+
+
     private List<YoGuest> guests = new List<YoGuest>();
 
-    // protected override void OnInitialized()
-    // {
-    //     // Получаем список гостей
-    //     guests = DB.YoGuests.ToList();
-    // }
     protected override async Task OnInitializedAsync()
     {
         YoFeedback ??= await DB.YoFeedbacks.FirstOrDefaultAsync(m => m.Id == Id);
@@ -86,30 +87,51 @@ else
         }
         // Получаем список гостей
         guests = DB.YoGuests.ToList();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var currentUser = authState.User;
+        if (currentUser.Identity != null && currentUser.Identity.IsAuthenticated)
+        {
+            var userManager = (UserManager<ApplicationUser>)UserManager;
+            var user = await userManager.GetUserAsync(currentUser);
+            if (user != null)
+            {
+                // Проверка роли пользователя
+                IsUser = await userManager.IsInRoleAsync(user, "user");
+            }
+        }
     }
 
     // To protect from overposting attacks, enable the specific properties you want to bind to.
     // For more details, see https://aka.ms/RazorPagesCRUD.
     public async Task UpdateYoFeedback()
     {
-        DB.Attach(YoFeedback!).State = EntityState.Modified;
-
-        try
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var currentUser = authState.User;
+        if (currentUser.Identity != null && currentUser.Identity.IsAuthenticated)
         {
-            await DB.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!YoFeedbackExists(YoFeedback!.Id))
-            {
-                NavigationManager.NavigateTo("notfound");
-            }
-            else
-            {
-                throw;
-            }
-        }
+            var userManager = (UserManager<ApplicationUser>)UserManager;
+            var user = await userManager.GetUserAsync(currentUser);
+            var guest = DB.YoGuests.First(c => c.UserId == user.Id);
+            YoFeedback.GuestId = guest.Id;
+            YoFeedback.FeedbackDate = DateTime.Now;
+            DB.Attach(YoFeedback!).State = EntityState.Modified;
 
+            try
+            {
+                await DB.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!YoFeedbackExists(YoFeedback!.Id))
+                {
+                    NavigationManager.NavigateTo("notfound");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
         NavigationManager.NavigateTo("/yofeedbacks");
     }
 

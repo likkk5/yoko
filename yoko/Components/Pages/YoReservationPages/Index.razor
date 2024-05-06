@@ -18,11 +18,19 @@
     <PropertyColumn Property="yoreservation => yoreservation.RoomNumber" />
     <PropertyColumn Property="yoreservation => yoreservation.ReservationStatus" />
     <PropertyColumn Property="yoreservation => yoreservation.Cost" />
-    <PropertyColumn Property="yoreservation => yoreservation.GuestId" />
+    <AuthorizeView Roles="Admin">
+        <Authorized>
+            <PropertyColumn Property="yoreservation => yoreservation.GuestId" />
+        </Authorized>
+    </AuthorizeView>
 
     <TemplateColumn Context="yoreservation">
         <a href="@($"yoreservations/edit?id={yoreservation.Id}")">Edit</a> |
-        <a href="@($"yoreservations/details?id={yoreservation.Id}")">Details</a> |
-        <a href="@($"yoreservations/delete?id={yoreservation.Id}")">Delete</a>
+        <a href="@($"yoreservations/details?id={yoreservation.Id}")">Details</a> 
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                | <a href="@($"yofeedbacks/delete?id={yoreservation.Id}")">Delete</a>
+            </Authorized>
+        </AuthorizeView>
     </TemplateColumn>
 </QuickGrid>

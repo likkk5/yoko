@@ -2,6 +2,9 @@
 @inject yoko.Data.ApplicationDbContext DB
 @using yoko.Data
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
 
 <PageTitle>Create</PageTitle>
 
@@ -14,11 +17,11 @@
         <EditForm method="post" Model="YoFeedback" OnValidSubmit="AddYoFeedback" FormName="create" Enhance>
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" />
-            <div class="mb-3">
+@*             <div class="mb-3">
                 <label for="feedbackdate" class="form-label">FeedbackDate:</label> 
                 <InputDate id="feedbackdate" @bind-Value="YoFeedback.FeedbackDate" class="form-control" /> 
                 <ValidationMessage For="() => YoFeedback.FeedbackDate" class="text-danger" /> 
-            </div>        
+            </div> *@        
            @*  <div class="mb-3">
                 <label for="feedbacktime" class="form-label">FeedbackTime:</label> 
                 <InputText id="feedbacktime" @bind-Value="YoFeedback.FeedbackTime" class="form-control" /> 
@@ -34,16 +37,18 @@
                 <InputNumber id="rating" @bind-Value="YoFeedback.Rating" class="form-control" /> 
                 <ValidationMessage For="() => YoFeedback.Rating" class="text-danger" /> 
             </div>
+
             <div class="mb-3">
                 <label for="guestid" class="form-label">GuestId:</label>
-                <select id="guestid" @bind="YoFeedback.GuestId" class="form-control">
+                <InputSelect id="guestid" @bind-Value="YoFeedback.GuestId" class="form-select" disabled="@IsUser">
                     @foreach (var guest in guests)
                     {
                         <option value="@guest.Id">@guest.Id</option>
                     }
-                </select>
+                </InputSelect>
                 <ValidationMessage For="() => YoFeedback.GuestId" class="text-danger" />
             </div>
+
             <button type="submit" class="btn btn-primary">Create</button>
         </EditForm>
     </div>
@@ -55,11 +60,25 @@
 
 @code {
     private List<YoGuest> guests = new List<YoGuest>();
+    private bool IsUser { get; set; } = false;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         // Получаем список гостей
         guests = DB.YoGuests.ToList();
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var currentUser = authState.User;
+        if (currentUser.Identity != null && currentUser.Identity.IsAuthenticated)
+        {
+            var userManager = (UserManager<ApplicationUser>)UserManager;
+            var user = await userManager.GetUserAsync(currentUser);
+            if (user != null)
+            {
+                // Проверка роли пользователя
+                IsUser = await userManager.IsInRoleAsync(user, "user");
+            }
+        }
     }
     [SupplyParameterFromForm]
     public YoFeedback YoFeedback { get; set; } = new();
@@ -67,8 +86,18 @@
     // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
     public async Task AddYoFeedback()
     {
-        DB.YoFeedbacks.Add(YoFeedback);
-        await DB.SaveChangesAsync();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var currentUser = authState.User;
+        if (currentUser.Identity != null && currentUser.Identity.IsAuthenticated)
+        {
+            var userManager = (UserManager<ApplicationUser>)UserManager;
+            var user = await userManager.GetUserAsync(currentUser);
+            var guest = DB.YoGuests.First(c => c.UserId == user.Id);
+            YoFeedback.GuestId = guest.Id;
+            YoFeedback.FeedbackDate = DateTime.Now;
+            DB.YoFeedbacks.Add(YoFeedback);
+            await DB.SaveChangesAsync();
+        }
         NavigationManager.NavigateTo("/yofeedbacks");
     }
 }
