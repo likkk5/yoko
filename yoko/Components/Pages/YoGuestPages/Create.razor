@@ -1,9 +1,12 @@
 ﻿@page "/yoguests/create"
 @inject yoko.Data.ApplicationDbContext DB
+@using System.Text.RegularExpressions
 @using yoko.Data
 @inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
 
 <PageTitle>Create</PageTitle>
 
@@ -15,22 +18,27 @@
     <div class="col-md-4">
         <EditForm method="post" Model="YoGuest" OnValidSubmit="AddYoGuest" FormName="create" Enhance>
             <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" />
-            <div class="mb-3">
-                <label for="passportnumber" class="form-label">PassportNumber:</label> 
-                <InputText id="passportnumber" @bind-Value="YoGuest.PassportNumber" class="form-control" /> 
-                <ValidationMessage For="() => YoGuest.PassportNumber" class="text-danger" /> 
-            </div>        
+            <ValidationSummary class="text-danger" />                
             <div class="mb-3">
                 <label for="residence" class="form-label">Residence:</label> 
-                <InputText id="residence" @bind-Value="YoGuest.Residence" class="form-control" /> 
+                <InputSelect id="residence" @bind-Value="YoGuest.Residence" class="form-select" @onchange="ValidateResidence" required>
+                    <option value="">Select a country...</option>
+                    @foreach (var country in validCountries)
+                    {
+                        <option value="@country">@country</option>
+                    }
+                </InputSelect> 
                 <ValidationMessage For="() => YoGuest.Residence" class="text-danger" /> 
-            </div>        
-           @*  <div class="mb-3">
-                <label for="userid" class="form-label">UserId:</label> 
-                <InputText id="userid" @bind-Value="YoGuest.UserId" class="form-control" /> 
-                <ValidationMessage For="() => YoGuest.UserId" class="text-danger" /> 
-            </div> *@      
+            </div>
+            <div class="mb-3">
+                <label for="passportnumber" class="form-label">PassportNumber:</label>
+                <InputText id="passportnumber" @bind-Value="YoGuest.PassportNumber" class="form-control" @oninput=" ValidatePassportNumber" required />
+                @if (!string.IsNullOrEmpty(passportNumberErrorMessage))
+                {
+                    <p class="text-danger">@passportNumberErrorMessage</p>
+                }
+                <ValidationMessage For="() => YoGuest.PassportNumber" class="text-danger" />
+            </div>
             <div class="mb-3">
                 <label for="userid" class="form-label">UserId:</label>
                 <InputSelect id="userid" @bind-Value="YoGuest.UserId" class="form-select">
@@ -53,21 +61,98 @@
 @code {
     //private ApplicationUser[]? applicationuser;
     private List<ApplicationUser> users = new List<ApplicationUser>();
+    private bool IsUser { get; set; } = false;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         // Получаем список пользователей
         var allUsers = UserManager.Users.ToList();
         users.AddRange(allUsers);
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var currentUser = authState.User;
+        if (currentUser.Identity != null && currentUser.Identity.IsAuthenticated)
+        {
+            var userManager = (UserManager<ApplicationUser>)UserManager;
+            var user = await userManager.GetUserAsync(currentUser);
+
+            if (user != null)
+            {
+                // Проверка роли пользователя
+                IsUser = await userManager.IsInRoleAsync(user, "user");
+            }
+        }
     }
     [SupplyParameterFromForm]
     public YoGuest YoGuest { get; set; } = new();
 
+    // Словарь для хранения регулярных выражений для каждой страны
+    Dictionary<string, string> countryRegexMap = new Dictionary<string, string>
+{
+    { "Belarus", @"^(AB|AC|AM|MP|MC)\d{7}$" },
+    { "Russia", @"^\d{10}$" },
+    { "USA", @"^\d{9}$" },
+    { "Germany", @"\b[CF-HJ-NPRTV-Z0-9]{9}[0-9]?D?\b$" },
+    { "France", @"\b[0-9]{2}[A-Z]{2}[0-9]{5}\b$" },
+};
+
+    private string passportNumberErrorMessage;
+
+    private async Task ValidatePassportNumber(ChangeEventArgs e)
+    {
+        string passportNumber = e.Value?.ToString();
+        string selectedCountry = YoGuest.Residence; // Получаем выбранную страну
+
+        // Получаем регулярное выражение для выбранной страны
+        if (countryRegexMap.TryGetValue(selectedCountry, out string countryRegex))
+        {
+            var regex = new Regex(countryRegex);
+
+            if (!regex.IsMatch(passportNumber))
+            {
+                YoGuest.PassportNumber = null; // Очистить введенное значение
+                passportNumberErrorMessage = "Invalid passport number for selected country.";
+            }
+            else
+            {
+                passportNumberErrorMessage = null;
+            }
+        }
+        else
+        {
+            // Если для страны нет определенного регулярного выражения, считаем номер паспорта невалидным
+            YoGuest.PassportNumber = null; // Очистить введенное значение
+            passportNumberErrorMessage = "No validation rule found for selected country.";
+        }
+
+        // Обновить компонент
+        await InvokeAsync(() => StateHasChanged());
+    }
+    private List<string> validCountries = new List<string> { "Belarus", "Russia", "USA", "Germany", "France", /* другие страны */ };
+
+    private async Task ValidateResidence(ChangeEventArgs e)
+    {
+        string residence = e.Value?.ToString();
+
+        if (!validCountries.Contains(residence))
+        {
+            YoGuest.Residence = null; // Очистить введенное значение
+        }
+
+        // Обновить компонент
+        await InvokeAsync(() => StateHasChanged());
+    }
     // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
     public async Task AddYoGuest()
     {
-        DB.YoGuests.Add(YoGuest);
-        await DB.SaveChangesAsync();
-        NavigationManager.NavigateTo("/yoguests");
+        if (!string.IsNullOrEmpty(passportNumberErrorMessage))
+        {
+            YoGuest.PassportNumber = null;
+            return;
+        }
+            DB.YoGuests.Add(YoGuest);
+            await DB.SaveChangesAsync();
+            NavigationManager.NavigateTo("/yoguests");
+        
     }
 }

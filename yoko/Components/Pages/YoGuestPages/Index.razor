@@ -2,6 +2,10 @@
 @using Microsoft.AspNetCore.Components.QuickGrid
 @inject yoko.Data.ApplicationDbContext DB
 @using yoko.Data
+@using Microsoft.AspNetCore.Identity
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
+@using Microsoft.EntityFrameworkCore
 
 <PageTitle>Index</PageTitle>
 
@@ -11,14 +15,87 @@
     <a href="yoguests/create">Create New</a>
 </p>
 
-<QuickGrid Class="table" Items="DB.YoGuests">
+@* <QuickGrid Class="table" Items="DB.YoGuests">
     <PropertyColumn Property="yoguest => yoguest.PassportNumber" />
     <PropertyColumn Property="yoguest => yoguest.Residence" />
-    <PropertyColumn Property="yoguest => yoguest.UserId" />
+    <AuthorizeView Roles="Admin">
+        <Authorized>
+                <PropertyColumn Property="yoguest => yoguest.UserId" />
+        </Authorized>
+    </AuthorizeView>
 
     <TemplateColumn Context="yoguest">
         <a href="@($"yoguests/edit?id={yoguest.Id}")">Edit</a> |
-        <a href="@($"yoguests/details?id={yoguest.Id}")">Details</a> |
-        <a href="@($"yoguests/delete?id={yoguest.Id}")">Delete</a>
+        <a href="@($"yoguests/details?id={yoguest.Id}")">Details</a>
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                |<a href="@($"yoguests/delete?id={yoguest.Id}")">Delete</a>
+            </Authorized>
+        </AuthorizeView>
     </TemplateColumn>
-</QuickGrid>
+</QuickGrid> *@
+@if (Guests != null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>PassportNumber</th>
+                <th>Residence</th>
+                <th>UserId</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var guest in Guests)
+            {
+                <tr>
+                    <td>@guest.PassportNumber</td>
+                    <td>@guest.Residence</td>
+                    <td>@guest.UserId</td>
+                    <td>
+                        <a href="@($"yoguests/edit?id={guest.Id}")">Edit</a> |
+                        <a href="@($"yoguests/details?id={guest.Id}")">Details</a>
+                        <AuthorizeView Roles="Admin">
+                            <Authorized>
+                                | <a href="@($"yoguests/delete?id={guest.Id}")">Delete</a>
+                            </Authorized>
+                        </AuthorizeView>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No guests found for the current user.</p>
+}
+@code {
+    private List<YoGuest> Guests;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var currentUser = authState.User;
+
+        if (currentUser.Identity != null && currentUser.Identity.IsAuthenticated)
+        {
+            var userManager = (UserManager<ApplicationUser>)UserManager;
+            var user = await userManager.GetUserAsync(currentUser);
+
+            if (user != null)
+            {
+                if (currentUser.IsInRole("Admin"))
+                {
+                    Guests = await DB.YoGuests.ToListAsync();
+                }
+                else
+                {
+                    Guests = await DB.YoGuests
+                        .Where(g => g.UserId == user.Id)
+                        .ToListAsync();
+                }
+            }
+        }
+    }
+}

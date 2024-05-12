@@ -2,13 +2,406 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
 
-<h1>Welcome to Hotel Yoko!</h1>
-
-<p>
+@* <h1>Welcome to Hotel Yoko!</h1> *@
+@* <p>
     Hotel Yoko is your premier destination for a luxurious stay.
     Whether you're here for business or pleasure, we offer a wide range of amenities and services to ensure your comfort and satisfaction.
-</p>
+</p> *@
+<style>
+    .slideshow-container {
+        max-width: 1000px;
+        position: relative;
+        margin: auto;
+    }
+
+    .mySlides {
+        display: none;
+    }
+
+        .mySlides img {
+            width: 100%;
+            height: auto;
+        }
+
+    .prev, .next {
+        cursor: pointer;
+        position: absolute;
+        top: 50%;
+        width: auto;
+        padding: 16px;
+        margin-top: -22px;
+        color: white;
+        font-weight: bold;
+        font-size: 18px;
+        transition: 0.6s ease;
+        border-radius: 0 3px 3px 0;
+        user-select: none;
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+
+    .next {
+        right: 0;
+        border-radius: 3px 0 0 3px;
+    }
+
+        .prev:hover, .next:hover {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+    .text {
+        color: #f2f2f2;
+        font-size: 15px;
+        padding: 8px 12px;
+        position: absolute;
+        bottom: 8px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .numbertext {
+        color: #f2f2f2;
+        font-size: 12px;
+        padding: 8px 12px;
+        position: absolute;
+        top: 0;
+    }
+
+    .preview-container {
+        overflow-x: auto; /* Enable horizontal scrolling */
+        white-space: nowrap; /* Keep all images on a single line */
+        text-align: center;
+        margin-top: 10px;
+        margin-left: 105px;
+        width: 1000px; /* Take full width */
+        display: flex;
+        justify-content: center;
+    }
+
+    .preview-slide {
+        display: inline-block;
+        margin: 0 5px;
+    }
+
+    .preview-image {
+        width: 100px; /* Adjust the width of the preview images as needed */
+        height: auto;
+        cursor: pointer;
+    }
+
+    .active {
+        border: 2px solid blue; /* Add styling for active preview */
+    }
+
+    .sedan-sc-regular {
+        font-family: "Sedan SC", serif;
+        font-weight: 400;
+        font-style: normal;
+    }
+
+    .container {
+        display: flex;
+        justify-content: space-between;
+        font-family: sedan-sc-regular;
+        padding: 0 20px;
+    }
+
+    .column {
+        flex-grow: 1;
+        margin: 0 30px; /* Увеличение расстояния между столбцами */
+        min-width: 400px;
+    }
+
+    .middle-column {
+        flex-grow: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 30px; /* Увеличение расстояния между столбцами */
+        min-width: 400px;
+    }
+
+    .third-column {
+        flex-grow: 1;
+        margin: 0 30px; /* Увеличение расстояния между столбцами */
+        min-width: 100px;
+
+    }
+
+    .line::before,
+    .line::after {
+        content: '';
+        position: absolute;
+        top: -5px; /* положения завитушек */
+        width: 30px;
+        height: 10px;
+        background: linear-gradient(to right, transparent 50%, lightgray 50%);
+    }
+
+    .line::before {
+        left: calc(50% - 30px); /* Позиционирование завитушки слева от центра */
+        transform: rotate(45deg);
+    }
+
+    .line::after {
+        right: calc(50% - 30px); /* Позиционирование завитушки справа от центра */
+        transform: rotate(-45deg);
+    }
+
+</style>
+<div style="font-family: sedan-sc-regular;">
+    <div id="aboutus" style="position: relative; font-family: sedan-sc-regular;">
+        <img src="https://hotels.sletat.ru/i/f/112639_13.jpg" style="width: 100%; height: auto;">
+        <div style="position: absolute; top: 5%; left: 0; width: 80%; text-align: center; color: white; padding: 20px; margin-left:100px">
+            <p style="font-size: 40px;">Welcome to Hotel Yoko!</p>
+            <div style="display: flex; justify-content: center; font-size: 32px;">
+                <span>&#9733;</span>
+                <span>&#9733;</span>
+                <span>&#9733;</span>
+                <span>&#9733;</span>
+                <span>&#9733;</span>
+            </div>
+        </div>
+        <div style="position: absolute; bottom: 5%; left: 2%; width: 70%; background-color: rgba(128, 128, 128, 0.6);  color: white; padding: 20px; font-size: 18px;">
+            @if (isAuthenticated)
+            {
+                <h2>Hello, @userName!</h2>
+                @if (isAdminOrEmployee)
+                {
+                    <p>Welcome, Admin or Employee!</p>
+                }
+                else
+                {
+                    <p>Welcome, Guest!</p>
+                    <p>Ready to experience our hotel's services? Please <a href="@("/guestorders")">Make order</a></p>
+                }
+                <ul style="list-style-type: none;">
+                    <li>&#10148; Explore our website to learn more about our hotel and the services we offer. Ready to book your stay? <a href="@("/yoreservations")" style="color: lightblue;">Browse available rooms</a> now!</li>
+                    <li>&#10148; Ready to share your feedback with us? We value your opinion! Visit our feedback page to leave a review and help us improve our services. <a href="@("/yofeedbacks/create")" style="color: lightblue;">Leave your feedback here</a></li>
+                </ul>
+
+            }
+            else
+            {
+                <p>Welcome, Guest!</p>
+                <p>Please <a href="@("/Account/Login")">log in</a> to access more features.</p>
+            }
+        </div>
+    </div>
+    <div style="font-size: 20px; font-weight: bold; text-align: center; padding: 20px;">
+        <hr class="line" style="border-top: 1px solid blue; margin-top: 0; margin-bottom: 10px;">
+        <p>
+            Hotel Yoko is your premier destination for a luxurious stay. Whether you're here for business or pleasure, we offer a wide range of amenities and services to ensure your comfort and satisfaction.
+        </p>
+        <hr class="line" style="border-top: 1px solid blue; margin-top: 10px; margin-bottom: 0;">
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center;">
+        <div id="gallery" class="slideshow-container">
+        <div class="mySlides">
+            <img src="https://hotels.sletat.ru/i/f/112639_40.jpg">
+        </div>
+
+        <div class="mySlides">
+            <img src="https://hotels.sletat.ru/i/f/112639_38.jpg">
+        </div>
+
+        <div class="mySlides">
+            <img src="https://hotels.sletat.ru/i/f/112639_36.jpg">
+        </div>
+
+        <div class="mySlides">
+            <img src="https://hotels.sletat.ru/i/f/112639_17.jpg">
+        </div>
+        <div class="mySlides">
+            <img src="https://hotels.sletat.ru/i/f/112639_16.jpg">
+        </div>
+
+        <div class="mySlides">
+            <img src="https://hotels.sletat.ru/i/f/112639_2.jpg">
+        </div>
+
+        <div class="mySlides">
+            <img src="https://hotels.sletat.ru/i/f/112639_11.jpg">
+        </div>
+
+        <div class="mySlides">
+            <img src="https://hotels.sletat.ru/i/f/112639_18.jpg">
+        </div>
+
+        <div class="mySlides">
+            <img src="https://hotels.sletat.ru/i/f/112639_26.jpg">
+        </div>
+        <div class="mySlides">
+            <img src="https://hotels.sletat.ru/i/f/112639_27.jpg">
+        </div>
+        <div class="mySlides">
+            <img src="https://hotels.sletat.ru/i/f/112639_28.jpg">
+        </div>
+        <div class="mySlides">
+            <img src="https://hotels.sletat.ru/i/f/112639_30.jpg">
+        </div>
+
+        <!-- Navigation arrows -->
+        <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+        <a class="next" onclick="plusSlides(1)">&#10095;</a>
+      </div>
+    </div>
+
+    <!-- Container for preview images -->
+    <div class="preview-container">
+
+        <div class="preview-slide">
+            <img src="https://hotels.sletat.ru/i/f/112639_40.jpg" onclick="currentSlide(1)" class="preview-image">
+        </div>
+        <div class="preview-slide">
+            <img src="https://hotels.sletat.ru/i/f/112639_38.jpg" onclick="currentSlide(2)" class="preview-image">
+        </div>
+        <div class="preview-slide">
+            <img src="https://hotels.sletat.ru/i/f/112639_36.jpg" onclick="currentSlide(3)" class="preview-image">
+        </div>
+        <div class="preview-slide">
+            <img src="https://hotels.sletat.ru/i/f/112639_17.jpg" onclick="currentSlide(4)" class="preview-image">
+        </div>
+        <div class="preview-slide">
+            <img src="https://hotels.sletat.ru/i/f/112639_16.jpg" onclick="currentSlide(5)" class="preview-image">
+        </div>
+
+        <div class="preview-slide">
+            <img src="https://hotels.sletat.ru/i/f/112639_2.jpg" onclick="currentSlide(6)" class="preview-image">
+        </div>
+
+        <div class="preview-slide">
+            <img src="https://hotels.sletat.ru/i/f/112639_11.jpg" onclick="currentSlide(7)" class="preview-image">
+        </div>
+
+        <div class="preview-slide">
+            <img src="https://hotels.sletat.ru/i/f/112639_18.jpg" onclick="currentSlide(8)" class="preview-image">
+        </div>
+    
+        <div class="preview-slide">
+            <img src="https://hotels.sletat.ru/i/f/112639_26.jpg" onclick="currentSlide(9)" class="preview-image">
+        </div>
+        <div class="preview-slide">
+            <img src="https://hotels.sletat.ru/i/f/112639_27.jpg" onclick="currentSlide(10)" class="preview-image">
+        </div>
+        <div class="preview-slide">
+            <img src="https://hotels.sletat.ru/i/f/112639_28.jpg" onclick="currentSlide(11)" class="preview-image">
+        </div>
+        <div class="preview-slide">
+            <img src="https://hotels.sletat.ru/i/f/112639_30.jpg" onclick="currentSlide(12)" class="preview-image">
+        </div>
+    </div>
+
+    <footer style="background-color: #f0f0f0; padding: 20px; border-top: 1px solid #ccc; font-size: 18px;">
+       @*  <div style="display: flex; font-family: sedan-sc-regular; padding: 0 20px;">
+            <div class="column">
+                <p style="font-weight: bold">Description of the hotel:</p>
+                <p>Address: 123 Main Street, City, Country</p>
+                <p>Phone: +971 (2) 492-22-22</p>
+                <p>Email: info@hotelyoko.com</p>
+                <p>Number of rooms: 378</p>
+                <p>To airport: 36 km</p>
+            </div>
+            <div class="column">
+                <p style="font-weight: bold">Description of the hotel:</p>
+                <p><img src="/images/icon_air_travel.png" alt="Air travel" /> Air travel</p>
+                <p><img src="/images/icon_accommodation.png" alt="Accommodation in the hotel" /> Accommodation in the hotel</p>
+                <p><img src="/images/icon_transfer.png" alt="Transfer" /> Transfer</p>
+                <p><img src="/images/icon_food.png" alt="Food (optional)" /> Food (optional)</p>
+                <p><img src="/images/icon_medical_insurance.png" alt="Medical insurance" /> Medical insurance</p>
+            </div>
+            <div class="column" style="display: flex; justify-content: flex-end;">
+                <p><img src="/images/spiral_logo.png" alt="logo" style="width: 40%; height: 60%;" /></p>
+            </div>
+        </div> *@
+        <div class="container">
+            <div class="column">
+                <p style="font-weight: bold">Description of the hotel:</p>
+                <p>Address: 123 Main Street, City, Country</p>
+                <p>Phone: +971 (2) 492-22-22</p>
+                <p>Email: info@hotelyoko.com</p>
+                <p>Number of rooms: 378</p>
+                <p>To airport: 36 km</p>
+            </div>
+            <div class="middle-column">
+                <div class="column">
+                    <p style="font-weight: bold">Description of the hotel:</p>
+                    <p><img src="/images/icon_air_travel.png" alt="Air travel" /> Air travel</p>
+                    <p><img src="/images/icon_accommodation.png" alt="Accommodation in the hotel" /> Accommodation in the hotel</p>
+                    <p><img src="/images/icon_transfer.png" alt="Transfer" /> Transfer</p>
+                    <p><img src="/images/icon_food.png" alt="Food (optional)" /> Food (optional)</p>
+                    <p><img src="/images/icon_medical_insurance.png" alt="Medical insurance" /> Medical insurance</p>
+                </div>
+            </div>
+            <div class="third-column">
+                <div style="display: flex; justify-content: flex-end;">
+                    <p><img src="/images/spiral_logo.png" alt="logo" style="width: 100%; height: auto;" /></p>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <div>
+                <ul style="list-style-type: none; padding: 0; display: flex; justify-content: center;">
+                    <li style="margin-right: 10px;"><a href="#aboutus">About Us</a></li>
+                    <li style="margin-right: 10px;">|</li>
+                    <li style="margin-right: 10px;"><a href="#gallery">Gallery</a></li>
+                    <li style="margin-right: 10px;">|</li>
+                    <li style="margin-right: 10px;"><a href="#contact">Contact</a></li>
+                    <li style="margin-right: 10px;">|</li>
+                    <li><a href="@("/yofeedbacks/create")">Feedback</a></li>
+                </ul>
+            </div>
+
+            <p>Follow us on <a href="#">Facebook</a> | <a href="#">Twitter</a> | <a href="#">Instagram</a></p>
+            <p>© 2024 Hotel Yoko. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        var slideIndex = 1; // Start from the first slide
+
+        showSlides(slideIndex);
+
+        function plusSlides(n) {
+            showSlides(slideIndex += n);
+        }
+
+        function currentSlide(n) {
+            showSlides(slideIndex = n);
+        }
+
+        function showSlides(n) {
+            var i;
+            var slides = document.getElementsByClassName("mySlides");
+            var previews = document.getElementsByClassName("preview-image");
+
+            // Reset all slides to hide them
+            for (i = 0; i < slides.length; i++) {
+                slides[i].style.display = "none";
+            }
+
+            // Reset all previews to remove any active styling
+            for (i = 0; i < previews.length; i++) {
+                previews[i].classList.remove("active");
+            }
+
+            // If slideIndex is out of range, reset it
+            if (n > slides.length) {
+                slideIndex = 1;
+            }
+            if (n < 1) {
+                slideIndex = slides.length;
+            }
+
+            // Display the current slide and mark the corresponding preview as active
+            slides[slideIndex - 1].style.display = "block";
+            previews[slideIndex - 1].classList.add("active");
+        }
+    </script>
+</div>
 
 @code {
     private string userName;
@@ -28,26 +421,4 @@
             isAdminOrEmployee = user.IsInRole("Admin") || user.IsInRole("employee");
         }
     }
-}
-
-@if (isAuthenticated)
-{
-    <h2>Hello, @userName!</h2>
-    @if (isAdminOrEmployee)
-    {
-        <p>Welcome, Admin or Employee!</p>
-    }
-    else
-    {
-        <p>Welcome, Guest!</p>
-        <p>Ready to experience our hotel's services? Please <a href="@("/guestorders")">Make order</a></p>
-    }
-    <p>Explore our website to learn more about our hotel and the services we offer. Ready to book your stay? <a href="@("/yoreservations")">Browse available rooms</a> now!</p>
-    <p>Ready to share your feedback with us? We value your opinion! Visit our feedback page to leave a review and help us improve our services. <a href="@("/yofeedbacks/create")">Leave your feedback here</a></p>
-
-}
-else
-{
-    <p>Welcome, Guest!</p>
-    <p>Please <a href="@("/Account/Login")">log in</a> to access more features.</p>
 }

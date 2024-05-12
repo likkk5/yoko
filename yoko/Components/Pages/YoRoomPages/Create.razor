@@ -51,10 +51,16 @@
                     }
                 </InputSelect>
                 <ValidationMessage For="() => YoRoom.RoomStatus" class="text-danger" /> 
-            </div>        
+            </div> 
+            <!-- Add the InputFile component for uploading photos -->
+           @*  <div class="mb-3">
+                <label for="photo" class="form-label">Upload Photo:</label>
+                <InputFile id="photo" OnChange="HandleFileSelect" />
+            </div> *@
             <button type="submit" class="btn btn-primary">Create</button>
         </EditForm>
     </div>
+
 </div>
 
 <div>
@@ -72,6 +78,18 @@
     [SupplyParameterFromForm]
     public YoRoom YoRoom { get; set; } = new();
 
+    // // Метод для обработки загруженного файла
+    // public async Task HandleFileSelect(InputFileChangeEventArgs e)
+    // {
+    //     var file = e.File;
+    //     if (file != null)
+    //     {
+    //         // Преобразование выбранного файла в base64 строку и присвоение ее свойству YoRoom.Photo
+    //         var buffer = new byte[file.Size];
+    //         await file.OpenReadStream().ReadAsync(buffer);
+    //         YoRoom.Photo = $"data:{file.ContentType};base64,{Convert.ToBase64String(buffer)}";
+    //     }
+    // }
     // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
     public async Task AddYoRoom()
     {
