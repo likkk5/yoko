@@ -41,7 +41,11 @@
             <tr>
                 <th>PassportNumber</th>
                 <th>Residence</th>
-                <th>UserId</th>
+                <AuthorizeView Roles="Admin">
+                    <Authorized>
+                        <th>UserId</th>
+                    </Authorized>
+                </AuthorizeView>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -51,7 +55,11 @@
                 <tr>
                     <td>@guest.PassportNumber</td>
                     <td>@guest.Residence</td>
-                    <td>@guest.UserId</td>
+                    <AuthorizeView Roles="Admin">
+                            <Authorized>
+                                <td>@guest.UserId</td>
+                        </Authorized>
+                    </AuthorizeView>
                     <td>
                         <a href="@($"yoguests/edit?id={guest.Id}")">Edit</a> |
                         <a href="@($"yoguests/details?id={guest.Id}")">Details</a>

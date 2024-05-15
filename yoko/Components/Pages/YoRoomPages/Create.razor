@@ -2,6 +2,7 @@
 @inject yoko.Data.ApplicationDbContext DB
 @using yoko.Data
 @inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
 <PageTitle>Create</PageTitle>
 
@@ -21,7 +22,7 @@
             </div>        
             <div class="mb-3">
                 <label for="costfornight" class="form-label">CostForNight:</label> 
-                <InputNumber id="costfornight" @bind-Value="YoRoom.CostForNight" class="form-control" /> 
+                <InputNumber id="costfornight" @bind-Value="YoRoom.CostForNight" class="form-control" min="0" />
                 <ValidationMessage For="() => YoRoom.CostForNight" class="text-danger" /> 
             </div>        
             <div class="mb-3">
@@ -53,10 +54,10 @@
                 <ValidationMessage For="() => YoRoom.RoomStatus" class="text-danger" /> 
             </div> 
             <!-- Add the InputFile component for uploading photos -->
-           @*  <div class="mb-3">
+            <div class="mb-3">
                 <label for="photo" class="form-label">Upload Photo:</label>
                 <InputFile id="photo" OnChange="HandleFileSelect" />
-            </div> *@
+            </div>
             <button type="submit" class="btn btn-primary">Create</button>
         </EditForm>
     </div>
@@ -78,23 +79,62 @@
     [SupplyParameterFromForm]
     public YoRoom YoRoom { get; set; } = new();
 
-    // // Метод для обработки загруженного файла
-    // public async Task HandleFileSelect(InputFileChangeEventArgs e)
+    // private string errorMessage;
+    // private void ValidateCost(ChangeEventArgs e)
     // {
-    //     var file = e.File;
-    //     if (file != null)
+    //     string input = e.Value?.ToString();
+    //     if (!string.IsNullOrEmpty(input) && !input.All(char.IsDigit))
     //     {
-    //         // Преобразование выбранного файла в base64 строку и присвоение ее свойству YoRoom.Photo
-    //         var buffer = new byte[file.Size];
-    //         await file.OpenReadStream().ReadAsync(buffer);
-    //         YoRoom.Photo = $"data:{file.ContentType};base64,{Convert.ToBase64String(buffer)}";
+    //         YoRoom.CostForNight = 0;
+    //         errorMessage = "Invalid value.";
+
     //     }
     // }
+
+    // Метод для обработки загруженного файла
+    public async Task HandleFileSelect(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.File;
+            if (file != null)
+            {
+                // using var ms = new MemoryStream();
+                // await file.OpenReadStream().CopyToAsync(ms);
+                // YoRoom.Photo = ms.ToArray();
+                using var ms = new MemoryStream();
+                await file.OpenReadStream().CopyToAsync(ms);
+                var bytes = ms.ToArray();
+
+                // Проверяем, что массив байтов не пустой
+                if (bytes != null && bytes.Length > 0)
+                {
+                    YoRoom.Photo = bytes;
+                }
+                else
+                {
+                    Console.WriteLine("The selected file is empty or invalid.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred while handling the file: {ex.Message}");
+        }
+
+    }
     // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
     public async Task AddYoRoom()
     {
         DB.YoRooms.Add(YoRoom);
-        await DB.SaveChangesAsync();
+        try
+        {
+            await DB.SaveChangesAsync();
+        }
+        catch(Exception e)
+        {
+            var test = e;
+        }
         NavigationManager.NavigateTo("/yorooms");
     }
 }

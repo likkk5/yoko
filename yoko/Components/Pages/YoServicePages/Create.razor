@@ -2,6 +2,7 @@
 @inject yoko.Data.ApplicationDbContext DB
 @using yoko.Data
 @inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
 <PageTitle>Create</PageTitle>
 
@@ -21,9 +22,13 @@
             </div>        
             <div class="mb-3">
                 <label for="cost" class="form-label">Cost:</label> 
-                <InputNumber id="cost" @bind-Value="YoService.Cost" class="form-control" /> 
+                <InputNumber id="cost" @bind-Value="YoService.Cost" class="form-control" min="0" />
                 <ValidationMessage For="() => YoService.Cost" class="text-danger" /> 
-            </div>        
+            </div>   
+            <div class="mb-3">
+                <label for="photo" class="form-label">Upload Photo:</label>
+                <InputFile id="photo" OnChange="HandleFileSelect" />
+            </div>
             <button type="submit" class="btn btn-primary">Create</button>
         </EditForm>
     </div>
@@ -37,7 +42,35 @@
 
     [SupplyParameterFromForm]
     public YoService YoService { get; set; } = new();
+    // Метод для обработки загруженного файла
+    public async Task HandleFileSelect(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.File;
+            if (file != null)
+            {
 
+                using var ms = new MemoryStream();
+                await file.OpenReadStream().CopyToAsync(ms);
+                var bytes = ms.ToArray();
+
+                if (bytes != null && bytes.Length > 0)
+                {
+                    YoService.Photo = bytes;
+                }
+                else
+                {
+                    Console.WriteLine("The selected file is empty or invalid.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred while handling the file: {ex.Message}");
+        }
+
+    }
     // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
     public async Task AddYoService()
     {

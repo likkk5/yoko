@@ -5,6 +5,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<ApplicationUser> UserManager
+@rendermode InteractiveServer
 
 <PageTitle>Create</PageTitle>
 
@@ -34,7 +35,7 @@
             </div>        
             <div class="mb-3">
                 <label for="rating" class="form-label">Rating:</label> 
-                <InputNumber id="rating" @bind-Value="YoFeedback.Rating" class="form-control" /> 
+                <InputNumber id="rating" @bind-Value="YoFeedback.Rating" class="form-control" min="0" />
                 <ValidationMessage For="() => YoFeedback.Rating" class="text-danger" /> 
             </div>
 
@@ -77,12 +78,33 @@
             {
                 // Проверка роли пользователя
                 IsUser = await userManager.IsInRoleAsync(user, "user");
+
+                var guest = DB.YoGuests.FirstOrDefault(c => c.UserId == user.Id);
+                if (guest != null)
+                {
+                    YoFeedback.GuestId = guest.Id;
+                }
+                else
+                {
+                    NavigationManager.NavigateTo("/yoguests/create");
+                }
             }
         }
     }
     [SupplyParameterFromForm]
     public YoFeedback YoFeedback { get; set; } = new();
 
+    // private string errorMessage;
+    // private void ValidateRating(ChangeEventArgs e)
+    // {
+    //     string input = e.Value?.ToString();
+    //     if (!string.IsNullOrEmpty(input) && !input.All(char.IsDigit))
+    //     {
+    //         YoFeedback.Rating = 0;
+    //         errorMessage = "Invalid value.";
+
+    //     }
+    // }
     // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
     public async Task AddYoFeedback()
     {

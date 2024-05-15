@@ -29,7 +29,7 @@
             </div>
             <div class="mb-3">
                 <label for="notificationdatetime" class="form-label">NotificationDateTime:</label> 
-                <InputDate id="notificationdatetime" @bind-Value="YoNotification.NotificationDateTime" class="form-control" /> 
+                <InputDate id="notificationdatetime" @bind-Value="YoNotification.NotificationDateTime" class="form-control" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
                 <ValidationMessage For="() => YoNotification.NotificationDateTime" class="text-danger" /> 
             </div>        
             <div class="mb-3">

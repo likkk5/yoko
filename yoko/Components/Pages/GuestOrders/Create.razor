@@ -97,8 +97,15 @@
             var userManager = (UserManager<ApplicationUser>)UserManager;
             var user = await userManager.GetUserAsync(currentUser);
             var guest = DB.YoGuests.First(c => c.UserId == user.Id);
+            if (guest == null)
+            {
+                NavigationManager.NavigateTo("/yoguests/create");
+            }           
             var reservation = DB.YoReservations.OrderByDescending(o => o.Id).First(c => c.GuestId == guest.Id);
-            
+            if (reservation == null)
+            {
+                NavigationManager.NavigateTo("/yoreservation/create");
+            }
             var yoOrder = new YoOrder
                 {
                     ReservationId = reservation.Id,

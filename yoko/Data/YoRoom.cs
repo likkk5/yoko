@@ -12,6 +12,7 @@ namespace yoko.Data
         public double CostForNight { get; set; }
         public RoomType RoomType { get; set; }
         public RoomStatus RoomStatus { get; set; }
+        public byte[]? Photo { get; set; }
     }
     public enum RoomType
     {

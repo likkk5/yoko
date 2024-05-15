@@ -5,6 +5,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<ApplicationUser> UserManager
+@rendermode InteractiveServer
 
 <PageTitle>Create</PageTitle>
 
@@ -24,18 +25,27 @@
             </div> *@        
             <div class="mb-3">
                 <label for="checkindate" class="form-label">CheckInDate:</label> 
-                <InputDate id="checkindate" @bind-Value="YoReservation.CheckInDate" class="form-control" /> 
+                <InputDate id="checkindate" @bind-Value="YoReservation.CheckInDate" class="form-control" min="@DateTime.Now.ToString("yyyy-MM-dd")" @onchange="CalculateNumberOfDays" />
                 <ValidationMessage For="() => YoReservation.CheckInDate" class="text-danger" /> 
             </div>        
             <div class="mb-3">
                 <label for="checkoutdate" class="form-label">CheckOutDate:</label> 
-                <InputDate id="checkoutdate" @bind-Value="YoReservation.CheckOutDate" class="form-control" /> 
+                <InputDate id="checkoutdate" @bind-Value="YoReservation.CheckOutDate" class="form-control" min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")" @onchange="CalculateNumberOfDays" />
                 <ValidationMessage For="() => YoReservation.CheckOutDate" class="text-danger" /> 
             </div>        
             <div class="mb-3">
-                <label for="roomnumber" class="form-label">RoomNumber:</label> 
-                <InputText id="roomnumber" @bind-Value="YoReservation.RoomNumber" class="form-control" /> 
-                <ValidationMessage For="() => YoReservation.RoomNumber" class="text-danger" /> 
+                <label for="roomnumber" class="form-label">RoomNumber:</label>
+                <InputSelect id="room" @bind-Value="YoReservation.RoomNumber" class="form-select">
+                    @* @foreach (var room in rooms)
+                    {
+                        <option value="@room.RoomNumber">@room.RoomNumber</option>
+                    } *@
+                    @foreach (var room in availableRooms)
+                    {
+                        <option value="@room.RoomNumber">@room.RoomNumber</option>
+                    }
+                </InputSelect>   
+                <ValidationMessage For="() => YoReservation.RoomNumber" class="text-danger" />
             </div>        
             <div class="mb-3">
                 <label for="reservationstatus" class="form-label">ReservationStatus:</label> 
@@ -48,11 +58,11 @@
                 </InputSelect>
                 <ValidationMessage For="() => YoReservation.ReservationStatus" class="text-danger" /> 
             </div>        
-            <div class="mb-3">
+            @* <div class="mb-3">
                 <label for="cost" class="form-label">Cost:</label> 
-                <InputNumber id="cost" @bind-Value="YoReservation.Cost" class="form-control" /> 
+                <InputNumber id="cost" @bind-Value="YoReservation.Cost" class="form-control" min="0" />
                 <ValidationMessage For="() => YoReservation.Cost" class="text-danger" /> 
-            </div>
+            </div> *@
             <div class="mb-3">
                 <label for="guestid" class="form-label">GuestId:</label>
                 <InputSelect id="guestid" @bind-Value="YoReservation.GuestId" class="form-select" disabled="@IsUser">
@@ -74,12 +84,17 @@
 
 @code {
     private List<YoGuest> guests = new List<YoGuest>();
+    private List<YoRoom> rooms = new List<YoRoom>();
+    private List<YoRoom> availableRooms = new List<YoRoom>();
     private bool IsUser { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
+        YoReservation.CheckInDate = DateTime.Now;
+        YoReservation.CheckOutDate = DateTime.Now.AddDays(1);
         // Получаем список гостей
         guests = DB.YoGuests.ToList();
+        rooms = DB.YoRooms.ToList();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var currentUser = authState.User;
         if (currentUser.Identity != null && currentUser.Identity.IsAuthenticated)
@@ -90,11 +105,52 @@
             {
                 // Проверка роли пользователя
                 IsUser = await userManager.IsInRoleAsync(user, "user");
+                var guest = DB.YoGuests.FirstOrDefault(c => c.UserId == user.Id);
+                if (guest != null)
+                {
+                    YoReservation.GuestId = guest.Id;
+                }
+                else
+                {
+                    NavigationManager.NavigateTo("/yoguests/create");
+                }
             }
+            availableRooms = rooms.Where(room => room.RoomStatus != RoomStatus.InUse).ToList();
+            if (availableRooms.Any())
+            {
+                YoReservation.RoomNumber = availableRooms.First().RoomNumber;
+            }
+            // if (rooms.Any())
+            // {
+            //     YoReservation.RoomNumber = rooms.First().RoomNumber;
+            // }         
         }
     }
     [SupplyParameterFromForm]
     public YoReservation YoReservation { get; set; } = new();
+
+    // private string errorMessage;
+    // private void ValidateCost(ChangeEventArgs e)
+    // {
+    //     string input = e.Value?.ToString();
+    //     if (!string.IsNullOrEmpty(input) && !input.All(char.IsDigit))
+    //     {
+    //         YoReservation.Cost = 0;
+    //         errorMessage = "Invalid value.";
+
+    //     }
+    // }
+    private int numberOfDays = 1; // По умолчанию 1 день
+
+    private void CalculateNumberOfDays(ChangeEventArgs e)
+    {
+        if (YoReservation.CheckOutDate > YoReservation.CheckInDate)
+        {
+            TimeSpan span = YoReservation.CheckOutDate - YoReservation.CheckInDate;
+            numberOfDays = (int)span.TotalDays;
+        }
+    }
+
 
     // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
     public async Task AddYoReservation()
@@ -108,6 +164,15 @@
             var guest = DB.YoGuests.First(c => c.UserId == user.Id);
             YoReservation.GuestId = guest.Id;
             YoReservation.ReservationDate = DateTime.Now;
+            var room = rooms.FirstOrDefault(r => r.RoomNumber == YoReservation.RoomNumber);
+            if (room != null)
+            {
+                YoReservation.Cost = room.CostForNight * numberOfDays;
+            }
+            else
+            {
+                YoReservation.Cost = 0;
+            }
             DB.YoReservations.Add(YoReservation);
             await DB.SaveChangesAsync();
         }

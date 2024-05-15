@@ -33,6 +33,17 @@
             <dt class="col-sm-2">RoomStatus</dt>
             <dd class="col-sm-10">@yoroom.RoomStatus</dd>
         </dl>
+        <dl class="row">
+        <dt class="col-sm-2">Photo</dt>
+        <dd class="col-sm-10">
+            @if (yoroom.Photo != null)
+            {
+                var imageBase64 = Convert.ToBase64String(yoroom.Photo);
+                var imageSrc = $"data:image/jpeg;base64,{imageBase64}";
+                <img src="@imageSrc" alt="Room Photo" style="max-width: 500px;" />
+            }
+        </dd>
+        </dl>
         <EditForm method="post" Model="yoroom" OnValidSubmit="DeleteYoRoom" FormName="delete" Enhance>
             <button type="submit" class="btn btn-danger" disabled="@(yoroom is null)">Delete</button> |
             <a href="/yorooms">Back to List</a>

@@ -32,12 +32,12 @@ else
                 </div> *@
                 <div class="mb-3">
                     <label for="checkindate" class="form-label">CheckInDate:</label>
-                    <InputDate id="checkindate" @bind-Value="YoReservation.CheckInDate" class="form-control" />
+                    <InputDate id="checkindate" @bind-Value="YoReservation.CheckInDate" class="form-control" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
                     <ValidationMessage For="() => YoReservation.CheckInDate" class="text-danger" />
                 </div>
                 <div class="mb-3">
                     <label for="checkoutdate" class="form-label">CheckOutDate:</label>
-                    <InputDate id="checkoutdate" @bind-Value="YoReservation.CheckOutDate" class="form-control" />
+                    <InputDate id="checkoutdate" @bind-Value="YoReservation.CheckOutDate" class="form-control" min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")" />
                     <ValidationMessage For="() => YoReservation.CheckOutDate" class="text-danger" />
                 </div>
                 <div class="mb-3">
@@ -58,7 +58,7 @@ else
                 </div>
                 <div class="mb-3">
                     <label for="cost" class="form-label">Cost:</label>
-                    <InputNumber id="cost" @bind-Value="YoReservation.Cost" class="form-control" />
+                    <InputNumber id="cost" @bind-Value="YoReservation.Cost" class="form-control" min="0" />
                     <ValidationMessage For="() => YoReservation.Cost" class="text-danger" />
                 </div>
                 <div class="mb-3">
@@ -112,7 +112,12 @@ else
             {
                 // Проверка роли пользователя
                 IsUser = await userManager.IsInRoleAsync(user, "user");
+                var guest = DB.YoGuests.First(c => c.UserId == user.Id);
+                var reservation = DB.YoReservations.OrderByDescending(o => o.Id).First(c => c.GuestId == guest.Id);
+                YoReservation.CheckInDate = reservation.CheckInDate;
+                YoReservation.CheckOutDate = reservation.CheckOutDate;
             }
+            
         }
     }
 

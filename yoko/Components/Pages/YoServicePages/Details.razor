@@ -21,6 +21,15 @@
             <dd class="col-sm-10">@yoservice.Name</dd>
             <dt class="col-sm-2">Cost</dt>
             <dd class="col-sm-10">@yoservice.Cost</dd>
+            <dt class="col-sm-2">Photo</dt>
+            <dd class="col-sm-10">
+                @if (yoservice.Photo != null)
+                {
+                    var imageBase64 = Convert.ToBase64String(yoservice.Photo);
+                    var imageSrc = $"data:image/jpeg;base64,{imageBase64}";
+                    <img src="@imageSrc" alt="Room Photo" style="max-width: 500px;" />
+                }
+            </dd>
         </dl>
         <div>
             <a href="@($"/yoservices/edit?id={yoservice.Id}")">Edit</a> |

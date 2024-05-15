@@ -3,6 +3,7 @@
 @using yoko.Data
 @inject NavigationManager NavigationManager
 @using Microsoft.EntityFrameworkCore
+@rendermode InteractiveServer
 
 <PageTitle>Edit</PageTitle>
 
@@ -54,6 +55,17 @@ else
                     </InputSelect>
                     <ValidationMessage For="() => YoRoom.RoomStatus" class="text-danger" />
                 </div>
+                <div class="mb-3">
+                    <label for="photo" class="form-label">Upload Photo:</label>
+                    <InputFile id="photo" OnChange="HandleFileSelect" />
+                </div>
+                @if (YoRoom.Photo != null)
+                {
+                    <div class="mb-3">
+                        <label for="currentPhoto" class="form-label">Current Photo:</label>
+                        <img src="@GetCurrentPhoto()" alt="Current Room Photo" class="img-fluid" />
+                    </div>
+                }
                 <button type="submit" class="btn btn-primary">Save</button>
             </EditForm>
         </div>
@@ -81,6 +93,41 @@ else
         }
     }
 
+    // Метод для обработки загруженного файла
+    public async Task HandleFileSelect(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.File;
+            if (file != null)
+            {
+                using var ms = new MemoryStream();
+                await file.OpenReadStream().CopyToAsync(ms);
+                var bytes = ms.ToArray();
+
+                // Проверяем, что массив байтов не пустой
+                if (bytes != null && bytes.Length > 0)
+                {
+                    YoRoom.Photo = bytes;
+                    DB.Entry(YoRoom).State = EntityState.Modified;
+                }
+                else
+                {
+                    Console.WriteLine("The selected file is empty or invalid.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred while handling the file: {ex.Message}");
+        }
+    }
+    // Получение текущей фотографии
+    public string GetCurrentPhoto()
+    {
+        var imageBase64 = Convert.ToBase64String(YoRoom.Photo);
+        return $"data:image/jpeg;base64,{imageBase64}";
+    }
     // To protect from overposting attacks, enable the specific properties you want to bind to.
     // For more details, see https://aka.ms/RazorPagesCRUD.
     public async Task UpdateYoRoom()

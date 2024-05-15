@@ -71,11 +71,25 @@ else
 
             if (user != null)
             {
-                var guest = DB.YoGuests.First(c => c.UserId == user.Id);
-                var reservation = DB.YoReservations.OrderByDescending(o => o.Id).First(c => c.GuestId == guest.Id);
-                UserOrders = await DB.YoOrders
-                    .Where(order => order.ReservationId == reservation.Id)
-                    .ToListAsync();
+                var guest = DB.YoGuests.FirstOrDefault(c => c.UserId == user.Id);
+                if (guest == null)
+                {
+                    NavigationManager.NavigateTo("/yoguests/create");
+                }
+                else
+                {
+                    var reservation = DB.YoReservations.OrderByDescending(o => o.Id).FirstOrDefault(c => c.GuestId == guest.Id);
+                    if (reservation == null)
+                    {
+                        NavigationManager.NavigateTo("/yoreservation/create");
+                    }
+                    else
+                    {
+                        UserOrders = await DB.YoOrders
+                            .Where(order => order.ReservationId == reservation.Id)
+                            .ToListAsync();
+                    }
+                }
             }
         }
 

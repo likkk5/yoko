@@ -12,12 +12,33 @@
 </p>
 
 <QuickGrid Class="table" Items="DB.YoServices">
-    <PropertyColumn Property="yoservice => yoservice.Name" />
-    <PropertyColumn Property="yoservice => yoservice.Cost" />
+    <TemplateColumn Context="yoservice">
+        @if (yoservice.Photo != null)
+        {
+            var imageBase64 = Convert.ToBase64String(yoservice.Photo);
+            var imageSrc = $"data:image/jpeg;base64,{imageBase64}";
+            <img src="@imageSrc" alt="Room Photo" width="200" />
+        }
+    </TemplateColumn>
+    <PropertyColumn Property="yoservice => yoservice.Name" Class="center-align" />
+    <PropertyColumn Property="yoservice => yoservice.Cost" Class="center-align" />
 
     <TemplateColumn Context="yoservice">
+        <AuthorizeView Roles="Admin">
+            <Authorized>
         <a href="@($"yoservices/edit?id={yoservice.Id}")">Edit</a> |
-        <a href="@($"yoservices/details?id={yoservice.Id}")">Details</a> |
-        <a href="@($"yoservices/delete?id={yoservice.Id}")">Delete</a>
+            </Authorized>
+        </AuthorizeView>
+        <a href="@($"yoservices/details?id={yoservice.Id}")">Details</a>
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+        | <a href="@($"yoservices/delete?id={yoservice.Id}")">Delete</a>
+            </Authorized>
+        </AuthorizeView>
     </TemplateColumn>
 </QuickGrid>
+<style>
+    .center-align {
+        vertical-align: middle;
+    }
+</style>

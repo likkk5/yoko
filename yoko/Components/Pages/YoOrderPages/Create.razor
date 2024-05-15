@@ -18,7 +18,7 @@
             <ValidationSummary class="text-danger" />
             <div class="mb-3">
                 <label for="orderdate" class="form-label">OrderDate:</label> 
-                <InputDate id="orderdate" @bind-Value="YoOrder.OrderDate" class="form-control" /> 
+                <InputDate id="orderdate" @bind-Value="YoOrder.OrderDate" class="form-control" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
                 <ValidationMessage For="() => YoOrder.OrderDate" class="text-danger" /> 
             </div>
             <div class="mb-3">
@@ -68,7 +68,7 @@
             </div>
             <div class="mb-3">
                 <label for="cost" class="form-label">Cost:</label> 
-                <InputNumber id="cost" @bind-Value="YoOrder.Cost" class="form-control" /> 
+                <InputNumber id="cost" @bind-Value="YoOrder.Cost" class="form-control" min="0"/>
                 <ValidationMessage For="() => YoOrder.Cost" class="text-danger" /> 
             </div>        
             <button type="submit" class="btn btn-primary">Create</button>
@@ -87,6 +87,7 @@
 
     protected override void OnInitialized()
     {
+
         // Получаем список резерваций
         reservations = DB.YoReservations.ToList();
         // Получаем список уведомлений
@@ -94,6 +95,8 @@
         // Получаем список пользователей
         var allUsers = UserManager.Users.ToList();
         users.AddRange(allUsers);
+        YoOrder.OrderDate = DateTime.Now;
+
     }
 
     [SupplyParameterFromForm]

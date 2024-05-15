@@ -15,22 +15,37 @@
 </AuthorizeView>
 
 <QuickGrid Class="table" Items="DB.YoRooms">
-    <PropertyColumn Property="yoroom => yoroom.RoomNumber" />
-    <PropertyColumn Property="yoroom => yoroom.CostForNight" />
-    <PropertyColumn Property="yoroom => yoroom.RoomType" />
-    <PropertyColumn Property="yoroom => yoroom.RoomStatus" />
-
     <TemplateColumn Context="yoroom">
+        @if (yoroom.Photo != null)
+        {
+            var imageBase64 = Convert.ToBase64String(yoroom.Photo);
+            var imageSrc = $"data:image/jpeg;base64,{imageBase64}";
+            <img src="@imageSrc" alt="Room Photo" width="200" />
+        }
+    </TemplateColumn>
+    <PropertyColumn Property="yoroom => yoroom.RoomNumber" Class="center-align" />
+    <PropertyColumn Property="yoroom => yoroom.CostForNight" Class="center-align" />
+    <PropertyColumn Property="yoroom => yoroom.RoomType" Class="center-align" />
+    <PropertyColumn Property="yoroom => yoroom.RoomStatus" Class="center-align" />
+    
+    <TemplateColumn Context="yoroom">
+        <div style="display: table-cell; vertical-align: middle;">
         <AuthorizeView Roles="Admin">
             <Authorized>
         <a href="@($"yorooms/edit?id={yoroom.Id}")">Edit</a> |
             </Authorized>
         </AuthorizeView>
         <a href="@($"yorooms/details?id={yoroom.Id}")">Details</a>
-         <AuthorizeView Roles="Admin">
+        <AuthorizeView Roles="Admin">
             <Authorized>
         | <a href="@($"yorooms/delete?id={yoroom.Id}")">Delete</a>
             </Authorized>
         </AuthorizeView>
+        </div>
     </TemplateColumn>
 </QuickGrid>
+<style>
+    .center-align {
+        vertical-align: middle;
+    }
+</style>
