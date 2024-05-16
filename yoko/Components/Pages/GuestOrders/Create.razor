@@ -1,5 +1,7 @@
 ﻿@page "/guestorders/create"
 @inject yoko.Data.ApplicationDbContext DB
+@using Microsoft.EntityFrameworkCore
+@using System.Security.Claims
 @using yoko.Data
 @inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Identity
@@ -17,7 +19,7 @@
     <div class="col-md-4">
         @* <form method="post" @onsubmit="AddGuestOrder"> *@
         <div class="mb-3">
-            <label for="services" class="form-label">Select Services:</label>
+            <label for="services" class="form-label" style="font-size: 24px;">Select Services:</label>
             @foreach (var service in services)
             {
                 <div class="form-check">
@@ -31,8 +33,16 @@
         <button class="btn btn-primary" @onclick="AddGuestOrder">Create</button>
         @* </form> *@
     </div>
+    <div class="col-md-6">
+        <h4>Previous services:</h4>
+        <ul>
+            @foreach (var service in previousServices)
+            {
+                <li>@service.Name - ordered @service.Count time(s)</li>
+            }
+        </ul>
+    </div>
 </div>
-
 <div>
     <a href="/guestorders">Back to List</a>
 </div>
@@ -40,7 +50,7 @@
 @code {
 
     private List<YoService> services = new List<YoService>();
-
+    private List<(int Id, string Name, int Count)> previousServices = new List<(int Id, string Name, int Count)>();
     private Dictionary<int, bool> IsServiceSelected { get; set; } = new Dictionary<int, bool>();
 
     private int SelectedServicesCount { get; set; }
@@ -57,7 +67,71 @@
         {
             IsServiceSelected[service.Id] = false;
         }
+
+        // Получаем предыдущие услуги
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var currentUser = authState.User;
+        if (currentUser.Identity != null && currentUser.Identity.IsAuthenticated)
+        {
+            var userId = currentUser.FindFirstValue(ClaimTypes.NameIdentifier);
+            previousServices = await GetPreviousServices(userId);
+        }
+        // Отмечаем предыдущие услуги как выбранные
+        foreach (var service in previousServices)
+        {
+            IsServiceSelected[service.Id] = true;
+        }
+
+        UpdateSelectedServicesCount();
+        UpdateTotalOrderCost();
     }
+
+    private async Task<List<(int Id, string Name, int Count)>> GetPreviousServices(string userId)
+    {
+        var services = new List<(int Id, string Name, int Count)>();
+
+        var user = await DB.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user != null)
+        {
+            var guest = await DB.YoGuests.FirstOrDefaultAsync(g => g.UserId == userId);
+            if (guest != null)
+            {
+                // Находим все резервации гостя
+                var reservations = await DB.YoReservations
+                    .Where(r => r.GuestId == guest.Id)
+                    .ToListAsync();
+
+                // Для каждой резервации найдем связанный заказ и услуги
+                foreach (var reservation in reservations)
+                {
+                    var order = await DB.YoOrders.FirstOrDefaultAsync(o => o.ReservationId == reservation.Id);
+                    if (order != null)
+                    {
+                        var serviceInOrders = await DB.YoServiceinOrders
+                            .Include(sio => sio.YoService)
+                            .Where(sio => sio.OrderId == order.Id)
+                            .ToListAsync();
+
+                        // Группируем записи YoServiceinOrder по Id услуги и подсчитываем количество
+                        var serviceCounts = serviceInOrders
+                            .GroupBy(sio => sio.ServiceId)
+                            .Select(group => new { ServiceId = group.Key, Count = group.Count() })
+                            .ToList();
+
+                        // Получаем Id, Name и количество заказов для каждой услуги
+                        foreach (var count in serviceCounts)
+                        {
+                            var serviceName = await DB.YoServices.Where(s => s.Id == count.ServiceId).Select(s => s.Name).FirstOrDefaultAsync();
+                            services.Add((count.ServiceId, serviceName, count.Count));
+                        }
+                    }
+                }
+            }
+        }
+
+        return services;
+    }
+
 
     private void ToggleServiceSelection(int serviceId)
     {
@@ -86,6 +160,7 @@
             }
         }
     }
+
 
     private async Task AddGuestOrder()
     {
@@ -152,6 +227,3 @@
     }
 
 }
-
-
-
