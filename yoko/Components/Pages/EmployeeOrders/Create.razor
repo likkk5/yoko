@@ -1,0 +1,192 @@
+﻿@page "/employeeorders/create"
+@inject yoko.Data.ApplicationDbContext DB
+@using Microsoft.EntityFrameworkCore
+@using yoko.Data
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@rendermode InteractiveServer
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h4>EmployeeOrder</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="YoOrder" OnValidSubmit="AddEmployeeOrder" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+            <div class="mb-3">
+                <label for="orderdate" class="form-label">OrderDate:</label>
+                <InputDate id="orderdate" @bind-Value="YoOrder.OrderDate" class="form-control" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                <ValidationMessage For="() => YoOrder.OrderDate" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="orderstatus" class="form-label">OrderStatus:</label>
+                <InputSelect id="orderstatus" @bind-Value="YoOrder.OrderStatus" class="form-select">
+                    @foreach (OrderStatus status in Enum.GetValues(typeof(OrderStatus)))
+                    {
+                        <option value="@status">@status</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => YoOrder.OrderStatus" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="notificationid" class="form-label">NotificationId:</label>
+                <InputSelect id="notificationid" @bind-Value="YoOrder.NotificationId" class="form-select">
+                    @foreach (var notification in notifications)
+                    {
+                        <option value="@notification.Id">@notification.Id</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => YoOrder.NotificationId" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="employeeid" class="form-label">EmployeeId:</label>
+                <InputSelect id="employeeid" @bind-Value="YoOrder.EmployeeId" class="form-select">
+                    @foreach (var user in employeeUsers)
+                    {
+                        <option value="@user.Id">@user.UserName</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => YoOrder.EmployeeId" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label" style="font-size: 24px;">Select Services:</label>
+                @foreach (var service in services)
+                {
+                    <div class="form-check">
+                        <input id="@service.Id" type="checkbox" checked="@IsServiceSelected[service.Id]" @onchange="e => ToggleServiceSelection(service.Id)" class="form-check-input" />
+                        <label class="form-check-label" for="@service.Id">@service.Name - $@service.Cost</label>
+                    </div>
+                }
+            </div>
+            <p>Selected Services Count: @SelectedServicesCount</p>
+            <p>Total Order Cost: $@TotalOrderCost</p>
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/employeeorders">Back to List</a>
+</div>
+
+@code {
+    private List<YoNotification> notifications = new List<YoNotification>();
+    private List<ApplicationUser> users = new List<ApplicationUser>();
+    private List<YoService> services = new List<YoService>();
+    private Dictionary<int, bool> IsServiceSelected { get; set; } = new Dictionary<int, bool>();
+    private int SelectedServicesCount { get; set; }
+    private List<ApplicationUser> employeeUsers = new List<ApplicationUser>();
+
+    private double TotalOrderCost { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Get notifications
+        notifications = DB.YoNotifications.ToList();
+
+        // var allUsers = UserManager.Users.ToList();
+        // users.AddRange(allUsers);
+        YoOrder.OrderDate = DateTime.Now;
+        // Retrieve users with "employee" role
+        var allUsers = await UserManager.Users.ToListAsync();
+        foreach (var user in allUsers)
+        {
+            if (await UserManager.IsInRoleAsync(user, "employee"))
+            {
+                employeeUsers.Add(user);
+            }
+        }
+        // Get services
+        services = DB.YoServices.ToList();
+        // Initialize service selection dictionary
+        foreach (var service in services)
+        {
+            IsServiceSelected[service.Id] = false;
+        }
+        UpdateSelectedServicesCount();
+        UpdateTotalOrderCost();
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var currentUser = authState.User;
+        if (currentUser.Identity != null && currentUser.Identity.IsAuthenticated)
+        {
+            var user = await UserManager.GetUserAsync(currentUser);
+            if (user != null)
+            {
+                YoOrder.EmployeeId = user.Id;
+            }
+        }
+    }
+
+    [SupplyParameterFromForm]
+    public YoOrder YoOrder { get; set; } = new();
+
+    private void ToggleServiceSelection(int serviceId)
+    {
+        IsServiceSelected[serviceId] = !IsServiceSelected[serviceId];
+        UpdateTotalOrderCost();
+        UpdateSelectedServicesCount();
+    }
+    private void UpdateSelectedServicesCount()
+    {
+        SelectedServicesCount = IsServiceSelected.Count(kvp => kvp.Value);
+    }
+    private void UpdateTotalOrderCost()
+    {
+        TotalOrderCost = 0;
+        foreach (var kvp in IsServiceSelected)
+        {
+            if (kvp.Value)
+            {
+                var selectedService = services.FirstOrDefault(s => s.Id == kvp.Key);
+                if (selectedService != null)
+                {
+                    TotalOrderCost += selectedService.Cost;
+                }
+            }
+        }
+    }
+
+    public async Task AddEmployeeOrder()
+    {
+        var yoOrder = new YoOrder
+            {
+                OrderDate = YoOrder.OrderDate,
+                OrderStatus = YoOrder.OrderStatus,
+                NotificationId = YoOrder.NotificationId,
+                EmployeeId = YoOrder.EmployeeId,
+                Cost = TotalOrderCost 
+            };
+
+        DB.YoOrders.Add(yoOrder);
+        await DB.SaveChangesAsync();
+
+        foreach (var kvp in IsServiceSelected)
+        {
+            if (kvp.Value)
+            {
+                var selectedService = services.FirstOrDefault(s => s.Id == kvp.Key);
+                if (selectedService != null)
+                {
+                    var serviceInOrder = new YoServiceinOrder
+                        {
+                            ServiceId = selectedService.Id,
+                            OrderId = yoOrder.Id,
+                            Amount = 1 
+                        };
+                    DB.YoServiceinOrders.Add(serviceInOrder);
+                }
+            }
+        }
+
+        await DB.SaveChangesAsync();
+
+        NavigationManager.NavigateTo("/employeeorders");
+    }
+}

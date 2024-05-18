@@ -1,6 +1,7 @@
 ﻿@page "/yoguests/create"
 @inject yoko.Data.ApplicationDbContext DB
 @using System.Text.RegularExpressions
+@using Microsoft.EntityFrameworkCore
 @using yoko.Data
 @inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Identity
@@ -32,7 +33,7 @@
             </div>
             <div class="mb-3">
                 <label for="passportnumber" class="form-label">PassportNumber:</label>
-                <InputText id="passportnumber" @bind-Value="YoGuest.PassportNumber" class="form-control" @oninput=" ValidatePassportNumber" required />
+                <InputText id="passportnumber" @bind-Value="YoGuest.PassportNumber" class="form-control" @onchange=" ValidatePassportNumber" required />
                 @if (!string.IsNullOrEmpty(passportNumberErrorMessage))
                 {
                     <p class="text-danger">@passportNumberErrorMessage</p>
@@ -102,33 +103,42 @@
     private async Task ValidatePassportNumber(ChangeEventArgs e)
     {
         string passportNumber = e.Value?.ToString();
-        string selectedCountry = YoGuest.Residence; // Получаем выбранную страну
+        string selectedCountry = YoGuest.Residence;
 
-        // Получаем регулярное выражение для выбранной страны
         if (countryRegexMap.TryGetValue(selectedCountry, out string countryRegex))
         {
             var regex = new Regex(countryRegex);
 
             if (!regex.IsMatch(passportNumber))
             {
-                YoGuest.PassportNumber = null; // Очистить введенное значение
+                YoGuest.PassportNumber = null;
                 passportNumberErrorMessage = "Invalid passport number for selected country.";
             }
             else
             {
-                passportNumberErrorMessage = null;
+                // Проверка уникальности номера паспорта
+                bool exists = await DB.YoGuests.AnyAsync(g => g.PassportNumber == passportNumber);
+
+                if (exists)
+                {
+                    YoGuest.PassportNumber = null;
+                    passportNumberErrorMessage = "This passport number is already in use.";
+                }
+                else
+                {
+                    passportNumberErrorMessage = null;
+                }
             }
         }
         else
         {
-            // Если для страны нет определенного регулярного выражения, считаем номер паспорта невалидным
-            YoGuest.PassportNumber = null; // Очистить введенное значение
+            YoGuest.PassportNumber = null;
             passportNumberErrorMessage = "No validation rule found for selected country.";
         }
 
-        // Обновить компонент
-        await InvokeAsync(() => StateHasChanged());
+        await InvokeAsync(StateHasChanged);
     }
+
     private List<string> validCountries = new List<string> { "Belarus", "Russia", "USA", "Germany", "France", /* другие страны */ };
 
     private async Task ValidateResidence(ChangeEventArgs e)
@@ -151,6 +161,15 @@
             YoGuest.PassportNumber = null;
             return;
         }
+        // Проверка уникальности перед добавлением гостя
+        bool exists = await DB.YoGuests.AnyAsync(g => g.PassportNumber == YoGuest.PassportNumber);
+        if (exists)
+        {
+            passportNumberErrorMessage = "This passport number is already in use.";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var currentUser = authState.User;
         if (currentUser.Identity != null && currentUser.Identity.IsAuthenticated)

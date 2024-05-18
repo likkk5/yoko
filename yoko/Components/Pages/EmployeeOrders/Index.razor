@@ -1,0 +1,86 @@
+﻿@page "/employeeorders"
+@using System.ComponentModel.DataAnnotations
+@using System.Text
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.EntityFrameworkCore
+@using yoko.Data
+@using yoko.Components.Account
+
+@inject yoko.Data.ApplicationDbContext DB
+@inject IdentityUserAccessor UserAccessor
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+@inject RoleManager<IdentityRole> RoleManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="employeeorders/create">Create New</a>
+</p>
+
+@if (EmployeeOrders != null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Order Date</th>
+                <th>Order Status</th>
+                <th>Total Cost</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in EmployeeOrders)
+            {
+                <tr>
+                    <td>@order.OrderDate</td>
+                    <td>@order.OrderStatus</td>
+                    <td>@order.Cost</td>
+                    <td>
+                        <a href="@($"employeeorders/edit/{order.Id}")">Edit</a> |
+                        <a href="@($"employeeorders/details/{order.Id}")">Details</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Loading orders...</p>
+}
+
+@code {
+    private List<YoOrder>? EmployeeOrders;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var currentUser = authState.User;
+
+        if (currentUser.Identity != null && currentUser.Identity.IsAuthenticated)
+        {
+            var user = await UserManager.GetUserAsync(currentUser);
+
+            if (user != null)
+            {
+                var isEmployee = await UserManager.IsInRoleAsync(user, "employee");
+                if (isEmployee)
+                {
+                    EmployeeOrders = await DB.YoOrders
+                        .Where(order => order.EmployeeId == user.Id)
+                        .ToListAsync();
+                }
+                else
+                {
+                    NavigationManager.NavigateTo("/notauthorized");
+                }
+            }
+        }
+    }
+}

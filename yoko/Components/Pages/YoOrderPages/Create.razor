@@ -1,5 +1,6 @@
 ﻿@page "/yoorders/create"
 @inject yoko.Data.ApplicationDbContext DB
+@using Microsoft.EntityFrameworkCore
 @using yoko.Data
 @inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Identity
@@ -59,7 +60,7 @@
             <div class="mb-3">
                 <label for="employeeid" class="form-label">EmployeeId:</label>
                 <InputSelect id="employeeid" @bind-Value="YoOrder.EmployeeId" class="form-select">
-                    @foreach (var user in users)
+                    @foreach (var user in employeeUsers)
                     {
                         <option value="@user.Id">@user.UserName</option>
                     }
@@ -84,19 +85,28 @@
     private List<YoReservation> reservations = new List<YoReservation>();
     private List<YoNotification> notifications = new List<YoNotification>();
     private List<ApplicationUser> users = new List<ApplicationUser>();
+    private List<ApplicationUser> employeeUsers = new List<ApplicationUser>();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
 
         // Получаем список резерваций
         reservations = DB.YoReservations.ToList();
         // Получаем список уведомлений
         notifications = DB.YoNotifications.ToList();
-        // Получаем список пользователей
-        var allUsers = UserManager.Users.ToList();
-        users.AddRange(allUsers);
+        // // Получаем список пользователей
+        // var allUsers = UserManager.Users.ToList();
+        // users.AddRange(allUsers);
         YoOrder.OrderDate = DateTime.Now;
-
+        // Retrieve users with "employee" role
+        var allUsers = await UserManager.Users.ToListAsync();
+        foreach (var user in allUsers)
+        {
+            if (await UserManager.IsInRoleAsync(user, "employee"))
+            {
+                employeeUsers.Add(user);
+            }
+        }
     }
 
     [SupplyParameterFromForm]

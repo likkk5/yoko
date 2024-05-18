@@ -1,0 +1,71 @@
+﻿@page "/employeeorders/details/{orderId}"
+@inject yoko.Data.ApplicationDbContext DB
+@using Microsoft.EntityFrameworkCore
+@using yoko.Data
+@using System.Linq
+
+<PageTitle>Order Details</PageTitle>
+
+<h1>Order Details</h1>
+
+@if (Order != null)
+{
+    <dl>
+        <dt>Order Date:</dt>
+        <dd>@Order.OrderDate</dd>
+        <dt>Order Status:</dt>
+        <dd>@Order.OrderStatus</dd> 
+        <dt>EmployeeId:</dt>
+        <dd>@Order.EmployeeId</dd>
+        <dt>Total Cost:</dt>
+        <dd>$@Order.Cost</dd>
+        <dt>Selected Services:</dt>
+        <dd>
+            <ul>
+                @foreach (var serviceInOrder in ServiceInOrderList)
+                {
+                    var service = DB.YoServices.FirstOrDefault(s => s.Id == serviceInOrder.ServiceId);
+                    if (service != null)
+                    {
+                        <li>@service.Name - $@service.Cost</li>
+                    }
+                }
+            </ul>
+        </dd>
+    </dl>
+    <div>
+        <a href="/employeeorders">Back to List</a>
+    </div>
+}
+else
+{
+    <p>Order not found.</p>
+}
+
+@code {
+    [Parameter]
+    public string orderId { get; set; }
+
+    private YoOrder Order { get; set; }
+    private YoServiceinOrder ServiceInOrder { get; set; }
+    private List<YoServiceinOrder> ServiceInOrderList = new List<YoServiceinOrder>();
+
+    protected override void OnInitialized()
+    {
+        int id;
+        if (int.TryParse(orderId, out id))
+        {
+            Order = DB.YoOrders
+                .Where(order => order.Id == id)
+                .FirstOrDefault();
+
+            ServiceInOrder = DB.YoServiceinOrders
+                            .Where(so => so.OrderId == id)
+                            .FirstOrDefault();
+
+            ServiceInOrderList = DB.YoServiceinOrders
+                            .Where(so => so.OrderId == id)
+                            .ToList();
+        }
+    }
+}

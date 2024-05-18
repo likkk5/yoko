@@ -1,0 +1,232 @@
+﻿@page "/employeeorders/edit/{orderId}"
+@inject yoko.Data.ApplicationDbContext DB
+@using Microsoft.EntityFrameworkCore
+@using yoko.Data
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
+
+<PageTitle>Edit Employee Order</PageTitle>
+
+<h1>Edit Employee Order</h1>
+
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="YoOrder" OnValidSubmit="UpdateYoOrder" FormName="edit" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+            <div class="mb-3">
+                <label for="orderdate" class="form-label">Order Date:</label>
+                <InputDate id="orderdate" @bind-Value="YoOrder.OrderDate" class="form-control" />
+                <ValidationMessage For="@(() => YoOrder.OrderDate)" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="orderstatus" class="form-label">Order Status:</label>
+                <InputSelect id="orderstatus" @bind-Value="YoOrder.OrderStatus" class="form-select">
+                    @foreach (OrderStatus status in Enum.GetValues(typeof(OrderStatus)))
+                    {
+                        <option value="@status">@status</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => YoOrder.OrderStatus)" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="notificationid" class="form-label">NotificationId:</label>
+                <InputSelect id="notificationid" @bind-Value="YoOrder.NotificationId" class="form-select">
+                    @foreach (var notification in notifications)
+                    {
+                        <option value="@notification.Id">@notification.Id</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => YoOrder.NotificationId" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="employeeid" class="form-label">EmployeeId:</label>
+                <InputSelect id="employeeid" @bind-Value="YoOrder.EmployeeId" class="form-select">
+                    @foreach (var user in employeeUsers)
+                    {
+                        <option value="@user.Id">@user.UserName</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => YoOrder.EmployeeId" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label" style="font-size: 24px;">Select Services:</label>
+                @foreach (var service in services)
+                {
+                    <div class="form-check">
+                        <input id="@service.Id" type="checkbox" checked="@IsServiceSelected[service.Id]" @onchange="e => ToggleServiceSelection(service.Id)" class="form-check-input" />
+                        <label class="form-check-label" for="@service.Id">@service.Name - $@service.Cost</label>
+                    </div>
+                }
+            </div>
+            <p>Selected Services Count: @SelectedServicesCount</p>
+            <p>Total Order Cost: $@TotalOrderCost</p>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/employeeorders">Back to List</a>
+</div>
+
+@code {
+    [Parameter]
+    public string orderId { get; set; }
+
+    [SupplyParameterFromForm]
+    public YoOrder YoOrder { get; set; } = new YoOrder();
+
+    private List<YoReservation> reservations = new List<YoReservation>();
+    private List<YoNotification> notifications = new List<YoNotification>();
+    private List<ApplicationUser> users = new List<ApplicationUser>();
+    private List<YoService> services = new List<YoService>();
+    private Dictionary<int, bool> IsServiceSelected { get; set; } = new Dictionary<int, bool>();
+    private int SelectedServicesCount { get; set; }
+    private double TotalOrderCost { get; set; }
+    private List<ApplicationUser> employeeUsers = new List<ApplicationUser>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Получаем список резерваций
+        reservations = await DB.YoReservations.ToListAsync();
+        // Получаем список уведомлений
+        notifications = await DB.YoNotifications.ToListAsync();
+        // Получаем список пользователей
+        users = await UserManager.Users.ToListAsync();
+        // Retrieve users with "employee" role
+        var allUsers = await UserManager.Users.ToListAsync();
+        foreach (var user in allUsers)
+        {
+            if (await UserManager.IsInRoleAsync(user, "employee"))
+            {
+                employeeUsers.Add(user);
+            }
+        }
+        int id;
+        if (int.TryParse(orderId, out id))
+        {
+            YoOrder = await DB.YoOrders.FirstOrDefaultAsync(order => order.Id == id);
+        }
+
+        // Загрузка списка доступных услуг
+        services = await DB.YoServices.ToListAsync();
+
+        // Инициализация словаря для отслеживания выбранных услуг
+        foreach (var service in services)
+        {
+            IsServiceSelected[service.Id] = false;
+        }
+
+        // Установка значений выбранных услуг, если они есть в заказе
+        if (YoOrder != null)
+        {
+            var selectedServices = await DB.YoServiceinOrders
+                .Where(so => so.OrderId == YoOrder.Id)
+                .Select(so => so.ServiceId)
+                .ToListAsync();
+
+            foreach (var serviceId in selectedServices)
+            {
+                if (IsServiceSelected.ContainsKey(serviceId))
+                {
+                    IsServiceSelected[serviceId] = true;
+                }
+            }
+        }
+
+        // Обновление счетчика выбранных услуг и общей стоимости заказа
+        UpdateSelectedServicesCount();
+        UpdateTotalOrderCost();
+    }
+
+    private void ToggleServiceSelection(int serviceId)
+    {
+        IsServiceSelected[serviceId] = !IsServiceSelected[serviceId];
+        UpdateSelectedServicesCount();
+        UpdateTotalOrderCost();
+    }
+
+    private void UpdateSelectedServicesCount()
+    {
+        SelectedServicesCount = IsServiceSelected.Count(kvp => kvp.Value);
+    }
+
+    private void UpdateTotalOrderCost()
+    {
+        TotalOrderCost = 0;
+        foreach (var kvp in IsServiceSelected)
+        {
+            if (kvp.Value)
+            {
+                var selectedService = services.FirstOrDefault(s => s.Id == kvp.Key);
+                if (selectedService != null)
+                {
+                    TotalOrderCost += selectedService.Cost;
+                }
+            }
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    private async Task UpdateYoOrder()
+    {
+        if (YoOrder != null)
+        {
+            try
+            {
+                // Обновление данных заказа
+                YoOrder.Cost = TotalOrderCost;
+                DB.Entry(YoOrder).State = EntityState.Modified;
+
+                // Удаление всех услуг из заказа
+                var existingServices = DB.YoServiceinOrders.Where(so => so.OrderId == YoOrder.Id);
+                DB.YoServiceinOrders.RemoveRange(existingServices);
+
+                // Добавление выбранных услуг в заказ
+                foreach (var kvp in IsServiceSelected)
+                {
+                    if (kvp.Value)
+                    {
+                        var selectedService = services.FirstOrDefault(s => s.Id == kvp.Key);
+                        if (selectedService != null)
+                        {
+                            var serviceInOrder = new YoServiceinOrder
+                                {
+                                    ServiceId = selectedService.Id,
+                                    OrderId = YoOrder.Id
+                                };
+                            DB.YoServiceinOrders.Add(serviceInOrder);
+                        }
+                    }
+                }
+
+                await DB.SaveChangesAsync();
+                // Перенаправление на страницу со списком заказов
+                NavigationManager.NavigateTo("/employeeorders");
+
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!YoOrderExists(YoOrder.Id))
+                {
+                    NavigationManager.NavigateTo("notfound");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            NavigationManager.NavigateTo("/employeeorders");
+        }
+    }
+
+    bool YoOrderExists(int id)
+    {
+        return DB.YoOrders.Any(e => e.Id == id);
+    }
+}

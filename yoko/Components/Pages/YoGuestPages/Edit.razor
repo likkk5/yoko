@@ -6,7 +6,9 @@
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @rendermode InteractiveServer
+
 
 <PageTitle>Edit</PageTitle>
 
@@ -48,7 +50,7 @@ else
                 </div>
                 <div class="mb-3">
                     <label for="userid" class="form-label">UserId:</label>
-                    <InputSelect id="userid" @bind-Value="YoGuest.UserId" class="form-select">
+                    <InputSelect id="userid" @bind-Value="YoGuest.UserId" class="form-select" disabled="@IsUser">
                         @foreach (var user in users)
                         {
                             <option value="@user.Id">@user.UserName</option>
@@ -74,6 +76,7 @@ else
     public YoGuest? YoGuest { get; set; }
 
     private List<ApplicationUser> users = new List<ApplicationUser>();
+    private bool IsUser { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -87,6 +90,20 @@ else
         var allUsers = UserManager.Users.ToList();
         users.AddRange(allUsers);
         passportNumberErrorMessage = null;
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var currentUser = authState.User;
+        if (currentUser.Identity != null && currentUser.Identity.IsAuthenticated)
+        {
+            var userManager = (UserManager<ApplicationUser>)UserManager;
+            var user = await userManager.GetUserAsync(currentUser);
+
+            if (user != null)
+            {
+                // Проверка роли пользователя
+                IsUser = await userManager.IsInRoleAsync(user, "user");
+                YoGuest.UserId = user.Id;
+            }
+        }
     }
     // Словарь для хранения регулярных выражений для каждой страны
     Dictionary<string, string> countryRegexMap = new Dictionary<string, string>

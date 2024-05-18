@@ -2,16 +2,69 @@
 
 @inject NavigationManager NavigationManager
 
-<div class="top-row ps-3 navbar navbar-dark">
+<div class="top-row ps-3 navbar navbar-dark custom-top-navbar">
     <div class="container-fluid">
         <a class="navbar-brand" href="">yoko</a>
     </div>
 </div>
 
 <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+<style>
+    .nav-icon {
+        width: 24px; 
+        height: 24px;
+        margin-right: 8px;
+    }
+    /* Изменение фона верхнего навигационного бара */
+    .custom-top-navbar {
+        background-color: gray; /* Серый фон */
+    }
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
+    /* Изменение фона и текста навигационного меню */
+    .custom-nav {
+        background-color: #3E6CE2; /* Голубой фон */
+        color: white; /* Белый текст */
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+        /* Изменение стиля ссылок в навигационном меню */
+        .custom-nav .nav-link {
+            color: white; /* Белый текст */
+            padding: 10px 15px; /* Отступы */
+            display: flex;
+            align-items: center;
+            text-decoration: none; /* Убрать подчеркивание */
+        }
+
+    /* Стиль для иконок в навигационном меню */
+    .nav-icon {
+        width: 24px; /* Задайте нужную ширину */
+        height: 24px; /* Задайте нужную высоту */
+        margin-right: 8px; /* Отступ справа */
+    }
+
+    /* Стиль для текста в навигационном меню */
+    .nav-text {
+        margin-left: 8px; /* Отступ слева для текста */
+    }
+
+   /* Изменение цвета ссылок при наведении */
+    .custom-nav .nav-link:hover {
+        background-color: #d3d3d3; /* Светло-серый фон при наведении */
+        color: white; /* Белый текст при наведении */
+    }
+
+    /* Изменение цвета ссылок при нажатии */
+    .custom-nav .nav-link:active {
+        background-color: #a9a9a9; /* Темно-серый фон при нажатии */
+        color: white; /* Белый текст при нажатии */
+    }
+
+</style>
+<div class="nav-scrollable custom-nav-container" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="flex-column custom-nav">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
@@ -39,7 +92,8 @@
             <Authorized>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="guestorders">
-                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> GuestOrders
+                        <img src="images/iconorderservice1.png" alt="GuestOrder Icon" class="nav-icon" />
+                        <span class="nav-text"></span> GuestOrders
                     </NavLink>
                 </div>
             </Authorized>
@@ -48,27 +102,32 @@
             <Authorized>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="yoguests">
-                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Guests
+                        <img src="images/iconclient2.png" alt="Guest Icon" class="nav-icon" />
+                        <span class="nav-text">Guests</span>
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="yoreservations">
-                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Reservations
+                        <img src="images/iconcheckin2.png" alt="Reservation Icon" class="nav-icon" />
+                        <span class="nav-text"></span> Reservations
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="yorooms">
-                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Rooms
+                        <img src="images/icondoor1.png" alt="Room Icon" class="nav-icon" />
+                        <span class="nav-text"></span> Rooms
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="yoservices">
-                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Services
+                        <img src="images/iconguestorder1.png" alt="Service Icon" class="nav-icon" />
+                        <span class="nav-text"></span> Services
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="yofeedbacks">
-                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Feedbacks
+                        <img src="images/iconfeedback2.png" alt="Feedback Icon" class="nav-icon" />
+                        <span class="nav-text"></span> Feedbacks
                     </NavLink>
                 </div>
                     
@@ -77,8 +136,9 @@
         <AuthorizeView Roles="employee">
             <Authorized>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="yoorders">
-                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Orders
+                    <NavLink class="nav-link" href="employeeorders">
+                        <img src="images/iconorderservice2.png" alt="EOrder Icon" class="nav-icon" />
+                        <span class="nav-text"></span> EOrders
                     </NavLink>
                 </div>
             </Authorized>
@@ -87,27 +147,32 @@
             <Authorized>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="yoserviceinorders">
-                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> ServiceInOrders
+                        <img src="images/iconservice3.png" alt="ServiceInOrder Icon" class="nav-icon" />
+                        <span class="nav-text"></span> ServiceInOrders
                     </NavLink>
                 </div>
                  <div class="nav-item px-3">
                     <NavLink class="nav-link" href="yonotifications">
-                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Notifications
+                        <img src="images/iconnotification2.png" alt="Notification Icon" class="nav-icon" />
+                        <span class="nav-text"></span> Notifications
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="yoorders">
-                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Orders
+                        <img src="images/iconservice2.png" alt="Order Icon" class="nav-icon" />
+                        <span class="nav-text"></span> Orders
                     </NavLink>
                 </div>      
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="yoroles">
-                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Roles
+                        <img src="images/iconrole1.png" alt="Role Icon" class="nav-icon" />
+                        <span class="nav-text"></span> Roles
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="yousers">
-                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Users
+                        <img src="images/iconrole2.png" alt="User Icon" class="nav-icon" />
+                        <span class="nav-text"></span> Users
                     </NavLink>
                 </div>
             </Authorized>
