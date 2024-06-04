@@ -30,7 +30,7 @@
             <tr>
                 <th>Order Date</th>
                 <th>Order Status</th>
-                <th>Total Cost</th>
+                <th>Total Cost, $</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -40,7 +40,7 @@
                 <tr>
                     <td>@order.OrderDate</td>
                     <td>@order.OrderStatus</td>
-                    <td>@order.Cost</td>
+                    <td>@($"{order.Cost}$")</td>
                     <td>
                         <a href="@($"employeeorders/edit/{order.Id}")">Edit</a> |
                         <a href="@($"employeeorders/details/{order.Id}")">Details</a>

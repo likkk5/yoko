@@ -9,6 +9,8 @@
     Hotel Yoko is your premier destination for a luxurious stay.
     Whether you're here for business or pleasure, we offer a wide range of amenities and services to ensure your comfort and satisfaction.
 </p> *@
+<link rel="stylesheet" href="~/app.css">
+
 <style>
     .slideshow-container {
         max-width: 1000px;
@@ -148,9 +150,23 @@
         right: calc(50% - 30px); /* Позиционирование завитушки справа от центра */
         transform: rotate(-45deg);
     }
+    /* Стили для скрытия скроллбара */
+    .nav-scrollable {
+        overflow: hidden; /* Скрыть скроллбар по умолчанию */
+    }
+    .nav-scrollable::-webkit-scrollbar {
+        display: none; /* Скрыть скроллбар */
+    }
 
+    .nav-scrollable {
+        scrollbar-width: none; /* Скрыть скроллбар */
+    }
+    /* Чтобы включить прокрутку при наведении */
+    .nav-scrollable:hover {
+        overflow: auto;
+    }
 </style>
-<div style="font-family: sedan-sc-regular;">
+<div style="font-family: sedan-sc-regular;" class="nav-scrollable">
     <div id="aboutus" style="position: relative; font-family: sedan-sc-regular;">
         <img src="https://hotels.sletat.ru/i/f/112639_13.jpg" style="width: 100%; height: auto;">
         <div style="position: absolute; top: 5%; left: 0; width: 80%; text-align: center; color: white; padding: 20px; margin-left:100px">
@@ -178,7 +194,7 @@
                 }
                 <ul style="list-style-type: none;">
                     <li>&#10148; Explore our website to learn more about our hotel and the services we offer. Ready to book your stay? <a href="@("/yoreservations")" style="color: lightblue;">Browse available rooms</a> now!</li>
-                    <li> &#10148; Ready to experience our hotel's services? Please <a href="@("/guestorders")" style="color: lightblue;">Make order</a></li >
+                    <li>&#10148; Ready to experience our hotel's services? Please <a href="@("/guestorders")" style="color: lightblue;">Make order</a></li >
                     <li>&#10148; Ready to share your feedback with us? We value your opinion! Visit our feedback page to leave a review and help us improve our services. <a href="@("/yofeedbacks/create")" style="color: lightblue;">Leave your feedback here</a></li>
                 </ul>
 
@@ -296,27 +312,6 @@
     </div>
 
     <footer style="background-color: #f0f0f0; padding: 20px; border-top: 1px solid #ccc; font-size: 18px;">
-       @*  <div style="display: flex; font-family: sedan-sc-regular; padding: 0 20px;">
-            <div class="column">
-                <p style="font-weight: bold">Description of the hotel:</p>
-                <p>Address: 123 Main Street, City, Country</p>
-                <p>Phone: +971 (2) 492-22-22</p>
-                <p>Email: info@hotelyoko.com</p>
-                <p>Number of rooms: 378</p>
-                <p>To airport: 36 km</p>
-            </div>
-            <div class="column">
-                <p style="font-weight: bold">Description of the hotel:</p>
-                <p><img src="/images/icon_air_travel.png" alt="Air travel" /> Air travel</p>
-                <p><img src="/images/icon_accommodation.png" alt="Accommodation in the hotel" /> Accommodation in the hotel</p>
-                <p><img src="/images/icon_transfer.png" alt="Transfer" /> Transfer</p>
-                <p><img src="/images/icon_food.png" alt="Food (optional)" /> Food (optional)</p>
-                <p><img src="/images/icon_medical_insurance.png" alt="Medical insurance" /> Medical insurance</p>
-            </div>
-            <div class="column" style="display: flex; justify-content: flex-end;">
-                <p><img src="/images/spiral_logo.png" alt="logo" style="width: 40%; height: 60%;" /></p>
-            </div>
-        </div> *@
         <div class="container">
             <div class="column">
                 <p style="font-weight: bold">Description of the hotel:</p>
@@ -340,6 +335,7 @@
                 <div style="display: flex; justify-content: flex-end;">
                     <p><img src="/images/spiral_logo.png" alt="logo" style="width: 100%; height: auto;" /></p>
                 </div>
+                <button id="theme-toggle" class="btn btn-primary"> Theme</button>
             </div>
         </div>
 
@@ -350,7 +346,7 @@
                     <li style="margin-right: 10px;">|</li>
                     <li style="margin-right: 10px;"><a href="#gallery">Gallery</a></li>
                     <li style="margin-right: 10px;">|</li>
-                    <li style="margin-right: 10px;"><a href="#contact">Contact</a></li>
+                    <li style="margin-right: 10px;"><a href="#contact">Contact Us</a></li>
                     <li style="margin-right: 10px;">|</li>
                     <li><a href="@("/yofeedbacks/create")">Feedback</a></li>
                 </ul>
@@ -403,7 +399,19 @@
         }
     </script>
 </div>
-
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', function () {
+                document.documentElement.classList.toggle('dark-theme');
+            });
+        } else {
+            console.error('Element with id "theme-toggle" not found.');
+        }
+    });
+    console.log("Button clicked");
+</script>
 @code {
     private string userName;
     private bool isAdminOrEmployee;

@@ -7,7 +7,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @rendermode InteractiveServer
 @inject AuthenticationStateProvider AuthenticationStateProvider
-
+@inject IJSRuntime JSRuntime
 <PageTitle>Create</PageTitle>
 
 <h1>Create</h1>
@@ -74,7 +74,11 @@
 <div>
     <a href="/employeeorders">Back to List</a>
 </div>
-
+<script>
+    function showNotification(message) {
+        alert(message);
+    }
+</script>
 @code {
     private List<YoNotification> notifications = new List<YoNotification>();
     private List<ApplicationUser> users = new List<ApplicationUser>();
@@ -186,7 +190,17 @@
         }
 
         await DB.SaveChangesAsync();
-
+        // Create notification
+        var notification = new YoNotification
+            {
+                OrderId = yoOrder.Id,
+                NotificationDateTime = DateTime.Now,
+                NotificationText = $"New order created with ID {yoOrder.Id}"
+            };
+        DB.YoNotifications.Add(notification);
+        await DB.SaveChangesAsync();
+        // Show popup notification
+        await JSRuntime.InvokeVoidAsync("showNotification", $"New order created with ID {yoOrder.Id}");
         NavigationManager.NavigateTo("/employeeorders");
     }
 }

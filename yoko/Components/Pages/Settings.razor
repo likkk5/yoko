@@ -1,0 +1,67 @@
+﻿@page "/settings"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Toggle Example</title>
+    <style>
+        :root {
+            --link-color: #006bb7;
+            --btn-primary-color: #fff;
+            --btn-primary-bg: #1b6ec2;
+            --btn-primary-border: #1861ac;
+            --focus-shadow-inner: white;
+            --focus-shadow-outer: #258cfb;
+            --valid-outline: #26b050;
+            --invalid-outline: #e50000;
+            --error-boundary-bg: #b32121;
+            --error-boundary-color: white;
+            --checkbox-border-color: #929292;
+        }
+
+        .dark-theme {
+            --link-color: #ff944d;
+            --btn-primary-color: #000;
+            --btn-primary-bg: #ffa31a;
+            --btn-primary-border: #e68a00;
+            --focus-shadow-inner: black;
+            --focus-shadow-outer: #ffbb33;
+            --valid-outline: #009933;
+            --invalid-outline: #ff3300;
+            --error-boundary-bg: #ff6347;
+            --error-boundary-color: black;
+            --checkbox-border-color: #666666;
+            background-color: #121212;
+            color: #ffffff;
+        }
+
+        body {
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .btn-primary {
+            color: var(--btn-primary-color);
+            background-color: var(--btn-primary-bg);
+            border-color: var(--btn-primary-border);
+        }
+    </style>
+</head>
+<body>
+    <button id="theme-toggle" class="btn btn-primary">Switch Theme</button>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var themeToggle = document.getElementById('theme-toggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function () {
+                    document.documentElement.classList.toggle('dark-theme');
+                });
+            } else {
+                console.error('Element with ID "theme-toggle" not found');
+            }
+        });
+    </script>
+</body>
+</html>
+

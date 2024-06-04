@@ -13,6 +13,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject NavigationManager NavigationManager
 @inject RoleManager<IdentityRole> RoleManager
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Index</PageTitle>
 
@@ -29,7 +30,7 @@
             <tr>
                 <th>Order Date</th>
                 <th>Order Status</th>
-                <th>TotalCost</th>
+                <th>TotalCost, $</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -39,10 +40,10 @@
                 <tr>
                     <td>@order.OrderDate</td>
                     <td>@order.OrderStatus</td>
-                    <td>@order.Cost</td>
+                    <td>@($"{order.Cost}$")</td>
                     <td>
                         <a href="@($"guestorders/edit/{order.Id}")">Edit</a> |
-                        <a href="@($"guestorders/details/{order.Id}")">Details</a> |
+                        <a href="@($"guestorders/details/{order.Id}")">Details</a> 
                     </td>
                 </tr>
             }
@@ -53,6 +54,11 @@ else
 {
     <p>Loading orders...</p>
 }
+<script>
+    function showNotification(message) {
+        alert(message);
+    }
+</script>
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @code {
 
@@ -74,14 +80,16 @@ else
                 var guest = DB.YoGuests.FirstOrDefault(c => c.UserId == user.Id);
                 if (guest == null)
                 {
-                    NavigationManager.NavigateTo("/yoguests/create");
+                    // await JSRuntime.InvokeVoidAsync("showNotification", "You need to create a guest first.");
+                    //NavigationManager.NavigateTo("/yoguests/create");
                 }
                 else
                 {
                     var reservation = DB.YoReservations.OrderByDescending(o => o.Id).FirstOrDefault(c => c.GuestId == guest.Id);
                     if (reservation == null)
                     {
-                        NavigationManager.NavigateTo("/yoreservation/create");
+                        // await JSRuntime.InvokeVoidAsync("showNotification", "You need to create a reservation first.");
+                        //NavigationManager.NavigateTo("/yoreservation/create");
                     }
                     else
                     {

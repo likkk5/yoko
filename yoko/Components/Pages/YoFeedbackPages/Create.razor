@@ -6,6 +6,7 @@
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<ApplicationUser> UserManager
 @rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Create</PageTitle>
 
@@ -35,7 +36,7 @@
             </div>        
             <div class="mb-3">
                 <label for="rating" class="form-label">Rating:</label> 
-                <InputNumber id="rating" @bind-Value="YoFeedback.Rating" class="form-control" min="0" />
+                <InputNumber id="rating" @bind-Value="YoFeedback.Rating" class="form-control" min="0" max="10" />
                 <ValidationMessage For="() => YoFeedback.Rating" class="text-danger" /> 
             </div>
 
@@ -58,7 +59,11 @@
 <div>
     <a href="/yofeedbacks">Back to List</a>
 </div>
-
+<script>
+    function showNotification(message) {
+        alert(message);
+    }
+</script>
 @code {
     private List<YoGuest> guests = new List<YoGuest>();
     private bool IsUser { get; set; } = false;
@@ -94,17 +99,6 @@
     [SupplyParameterFromForm]
     public YoFeedback YoFeedback { get; set; } = new();
 
-    // private string errorMessage;
-    // private void ValidateRating(ChangeEventArgs e)
-    // {
-    //     string input = e.Value?.ToString();
-    //     if (!string.IsNullOrEmpty(input) && !input.All(char.IsDigit))
-    //     {
-    //         YoFeedback.Rating = 0;
-    //         errorMessage = "Invalid value.";
-
-    //     }
-    // }
     // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
     public async Task AddYoFeedback()
     {
@@ -120,6 +114,7 @@
             DB.YoFeedbacks.Add(YoFeedback);
             await DB.SaveChangesAsync();
         }
+        await JSRuntime.InvokeVoidAsync("showNotification", "Feedback created successfully!");
         NavigationManager.NavigateTo("/yofeedbacks");
     }
 }

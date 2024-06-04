@@ -8,11 +8,26 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Create</PageTitle>
 
 <h1>Create</h1>
-
+@if (!IsUserGuest)
+{
+    <div class="alert alert-danger" role="alert">
+        To create service order or reservation, you need to become a guest first.<p><a href="@("/yoguests")" style="color: darkred;">Guest Page</a></p>
+    </div>
+}
+else if (!IsReservationCreated)
+{
+    <div class="alert alert-danger" role="alert">
+        To create a service order, you need to create a reservation first.
+        <p><a href="@("/yoreservations/create")" style="color: darkred;">Create Reservation</a></p>
+    </div>
+}
+else
+{
 <h4>GuestOrder</h4>
 <hr />
 <div class="row">
@@ -20,11 +35,11 @@
         @* <form method="post" @onsubmit="AddGuestOrder"> *@
         <div class="mb-3">
             <label for="services" class="form-label" style="font-size: 24px;">Select Services:</label>
-            @foreach (var service in services)
+            @foreach (var service in servicesWithId)
             {
                 <div class="form-check">
-                    <input id="@service.Id" type="checkbox" checked="@IsServiceSelected[service.Id]" @onchange="e => ToggleServiceSelection(service.Id)" class="form-check-input" />
-                    <label class="form-check-label" for="@service.Id">@service.Name-$@service.Cost</label>
+                    <input id="@service.Id" type="checkbox" checked="@IsServiceSelected.ContainsKey(service.Id) && IsServiceSelected[service.Id]" @onchange="e => ToggleServiceSelection(service.Id)" class="form-check-input" />
+                    <label class="form-check-label" for="@service.Id">@service.Service.Name - $@service.Service.Cost</label>
                 </div>
             }
         </div>
@@ -38,7 +53,7 @@
         <ul>
             @foreach (var service in previousServices)
             {
-                <li>@service.Name - ordered @service.Count time(s)</li>
+                <li>@servicesWithId.FirstOrDefault(s => s.Id == service.Key).Service.Name - ordered @service.Value.Count time(s)</li>
             }
         </ul>
     </div>
@@ -46,49 +61,110 @@
 <div>
     <a href="/guestorders">Back to List</a>
 </div>
-
+}
+<script>
+    function showNotification(message) {
+        alert(message);
+    }
+</script>
 @code {
 
-    private List<YoService> services = new List<YoService>();
-    private List<(int Id, string Name, int Count)> previousServices = new List<(int Id, string Name, int Count)>();
+    private List<(int Id, YoService Service)> servicesWithId = new List<(int Id, YoService Service)>();
+    private Dictionary<int, (string Name, int Count)> previousServices = new Dictionary<int, (string Name, int Count)>();
     private Dictionary<int, bool> IsServiceSelected { get; set; } = new Dictionary<int, bool>();
 
     private int SelectedServicesCount { get; set; }
 
     private double TotalOrderCost { get; set; }
-
+    private bool IsUserGuest { get; set; } = false;
+    private bool IsReservationCreated { get; set; } = false;
     protected override async Task OnInitializedAsync()
     {
         // Получаем список услуг
-        services = DB.YoServices.ToList();
-
-        // Инициализируем словарь для отслеживания выбранных услуг
-        foreach (var service in services)
+        var allServices = await DB.YoServices.ToListAsync();
+        foreach (var service in allServices)
         {
+            servicesWithId.Add((service.Id, service));
             IsServiceSelected[service.Id] = false;
         }
 
-        // Получаем предыдущие услуги
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var currentUser = authState.User;
         if (currentUser.Identity != null && currentUser.Identity.IsAuthenticated)
         {
+            var userManager = (UserManager<ApplicationUser>)UserManager;
+            var user = await userManager.GetUserAsync(currentUser);
+            if (user != null)
+            {
+                var guest = await DB.YoGuests.FirstOrDefaultAsync(g => g.UserId == user.Id);
+                if (guest != null)
+                {
+                    IsUserGuest = true;
+                    var reservation = await DB.YoReservations.FirstOrDefaultAsync(r => r.GuestId == guest.Id);
+                    IsReservationCreated = reservation != null;
+                }
+            }
             var userId = currentUser.FindFirstValue(ClaimTypes.NameIdentifier);
             previousServices = await GetPreviousServices(userId);
         }
-        // Отмечаем предыдущие услуги как выбранные
         foreach (var service in previousServices)
         {
-            IsServiceSelected[service.Id] = true;
+            IsServiceSelected[service.Key] = true;
         }
-
+       
         UpdateSelectedServicesCount();
         UpdateTotalOrderCost();
     }
 
-    private async Task<List<(int Id, string Name, int Count)>> GetPreviousServices(string userId)
+    // private async Task<List<(int Id, string Name, int Count)>> GetPreviousServices(string userId)
+    // {
+    //     var services = new List<(int Id, string Name, int Count)>();
+
+    //     var user = await DB.Users.FirstOrDefaultAsync(u => u.Id == userId);
+    //     if (user != null)
+    //     {
+    //         var guest = await DB.YoGuests.FirstOrDefaultAsync(g => g.UserId == userId);
+    //         if (guest != null)
+    //         {
+    //             // Находим все резервации гостя
+    //             var reservations = await DB.YoReservations
+    //                 .Where(r => r.GuestId == guest.Id)
+    //                 .ToListAsync();
+
+    //             // Для каждой резервации найдем связанный заказ и услуги
+    //             foreach (var reservation in reservations)
+    //             {
+    //                 var order = await DB.YoOrders.FirstOrDefaultAsync(o => o.ReservationId == reservation.Id);
+    //                 if (order != null)
+    //                 {
+    //                     var serviceInOrders = await DB.YoServiceinOrders
+    //                         .Include(sio => sio.YoService)
+    //                         .Where(sio => sio.OrderId == order.Id)
+    //                         .ToListAsync();
+
+    //                     // Группируем записи YoServiceinOrder по Id услуги и подсчитываем количество
+    //                     var serviceCounts = serviceInOrders
+    //                         .GroupBy(sio => sio.ServiceId)
+    //                         .Select(group => new { ServiceId = group.Key, Count = group.Count() })
+    //                         .ToList();
+
+    //                     // Получаем Id, Name и количество заказов для каждой услуги
+    //                     foreach (var count in serviceCounts)
+    //                     {
+    //                         var serviceName = await DB.YoServices.Where(s => s.Id == count.ServiceId).Select(s => s.Name).FirstOrDefaultAsync();
+    //                         services.Add((count.ServiceId, serviceName, count.Count));
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    //     return services;
+    // }
+
+    private async Task<Dictionary<int, (string Name, int Count)>> GetPreviousServices(string userId)
     {
-        var services = new List<(int Id, string Name, int Count)>();
+        var services = new Dictionary<int, (string Name, int Count)>();
 
         var user = await DB.Users.FirstOrDefaultAsync(u => u.Id == userId);
         if (user != null)
@@ -101,28 +177,36 @@
                     .Where(r => r.GuestId == guest.Id)
                     .ToListAsync();
 
-                // Для каждой резервации найдем связанный заказ и услуги
                 foreach (var reservation in reservations)
                 {
-                    var order = await DB.YoOrders.FirstOrDefaultAsync(o => o.ReservationId == reservation.Id);
-                    if (order != null)
+                    // Находим все заказы, связанные с текущей резервацией и предшествующие текущей дате
+                    var orders = await DB.YoOrders
+                        .Where(o => o.ReservationId == reservation.Id && o.OrderDate < DateTime.Now)
+                        .ToListAsync();
+
+                    foreach (var order in orders)
                     {
+                        // Находим все услуги, связанные с текущим заказом
                         var serviceInOrders = await DB.YoServiceinOrders
                             .Include(sio => sio.YoService)
                             .Where(sio => sio.OrderId == order.Id)
                             .ToListAsync();
 
-                        // Группируем записи YoServiceinOrder по Id услуги и подсчитываем количество
-                        var serviceCounts = serviceInOrders
-                            .GroupBy(sio => sio.ServiceId)
-                            .Select(group => new { ServiceId = group.Key, Count = group.Count() })
-                            .ToList();
-
-                        // Получаем Id, Name и количество заказов для каждой услуги
-                        foreach (var count in serviceCounts)
+                        // Обновляем словарь, увеличивая количество заказов для каждой услуги
+                        foreach (var serviceInOrder in serviceInOrders)
                         {
-                            var serviceName = await DB.YoServices.Where(s => s.Id == count.ServiceId).Select(s => s.Name).FirstOrDefaultAsync();
-                            services.Add((count.ServiceId, serviceName, count.Count));
+                            var serviceId = serviceInOrder.ServiceId;
+                            var serviceName = serviceInOrder.YoService.Name;
+
+                            if (services.ContainsKey(serviceId))
+                            {
+                                var (existingName, count) = services[serviceId];
+                                services[serviceId] = (existingName, count + 1);
+                            }
+                            else
+                            {
+                                services[serviceId] = (serviceName, 1);
+                            }
                         }
                     }
                 }
@@ -131,7 +215,6 @@
 
         return services;
     }
-
 
     private void ToggleServiceSelection(int serviceId)
     {
@@ -152,15 +235,14 @@
         {
             if (kvp.Value)
             {
-                var selectedService = services.FirstOrDefault(s => s.Id == kvp.Key);
-                if (selectedService != null)
+                var selectedService = servicesWithId.FirstOrDefault(s => s.Id == kvp.Key);
+                if (selectedService.Service != null)
                 {
-                    TotalOrderCost += selectedService.Cost;
+                    TotalOrderCost += selectedService.Service.Cost;
                 }
             }
         }
     }
-
 
     private async Task AddGuestOrder()
     {
@@ -172,15 +254,18 @@
             var userManager = (UserManager<ApplicationUser>)UserManager;
             var user = await userManager.GetUserAsync(currentUser);
             var guest = DB.YoGuests.First(c => c.UserId == user.Id);
-            if (guest == null)
-            {
-                NavigationManager.NavigateTo("/yoguests/create");
-            }           
             var reservation = DB.YoReservations.OrderByDescending(o => o.Id).First(c => c.GuestId == guest.Id);
-            if (reservation == null)
-            {
-                NavigationManager.NavigateTo("/yoreservation/create");
-            }
+            // if (guest == null)
+            // {
+            //     await JSRuntime.InvokeVoidAsync("showNotification", "You need to create a guest first.");
+            //     NavigationManager.NavigateTo("/yoguests/create");
+            // }           
+            // var reservation = DB.YoReservations.OrderByDescending(o => o.Id).First(c => c.GuestId == guest.Id);
+            // if (reservation == null)
+            // {
+            //     await JSRuntime.InvokeVoidAsync("showNotification", "You need to create a reservation first.");
+            //     NavigationManager.NavigateTo("/yoreservation/create");
+            // }
             var yoOrder = new YoOrder
                 {
                     ReservationId = reservation.Id,
@@ -199,13 +284,13 @@
                 {
                     if (kvp.Value)
                     {
-                        var selectedService = services.FirstOrDefault(s => s.Id == kvp.Key);
-                        if (selectedService != null)
+                        var selectedService = servicesWithId.FirstOrDefault(s => s.Id == kvp.Key);
+                        if (selectedService.Service != null)
                         {
                             var serviceInOrder = new YoServiceinOrder
                                 {
                                     ServiceId = selectedService.Id,
-                                    YoService = selectedService,
+                                    YoService = selectedService.Service,
                                     Order = yoOrder,
                                     OrderId = yoOrder.Id,
                                     Amount = SelectedServicesCount
@@ -215,7 +300,17 @@
                     }
                 }
                 await DB.SaveChangesAsync();
-
+                // Create notification
+                var notification = new YoNotification
+                    {
+                        OrderId = yoOrder.Id,
+                        NotificationDateTime = DateTime.Now,
+                        NotificationText = $"New order created with ID {yoOrder.Id}"
+                    };
+                DB.YoNotifications.Add(notification);
+                await DB.SaveChangesAsync();
+                // Show popup notification
+                await JSRuntime.InvokeVoidAsync("showNotification", $"New order created with ID {yoOrder.Id}");
             }
             catch (Exception e)
             {

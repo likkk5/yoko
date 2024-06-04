@@ -17,7 +17,7 @@
     <PropertyColumn Property="yoorder => yoorder.OrderStatus" />
     <PropertyColumn Property="yoorder => yoorder.NotificationId" />
     <PropertyColumn Property="yoorder => yoorder.EmployeeId" />
-    <PropertyColumn Property="yoorder => yoorder.Cost" />
+    <PropertyColumn Property="yoorder => yoorder.Cost" Title="Cost,$" />
 
     <TemplateColumn Context="yoorder">
         <a href="@($"yoorders/edit?id={yoorder.Id}")">Edit</a> |

@@ -7,11 +7,19 @@
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<ApplicationUser> UserManager
 @rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Create</PageTitle>
 
 <h1>Create</h1>
-
+@if (!IsUserGuest)
+{
+    <div class="alert alert-danger" role="alert">
+        To create reservation, you need to become a guest first.<p><a href="@("/yoguests")" style="color: darkred;">Guest Page</a></p>
+    </div>
+}
+else
+{
 <h4>YoReservation</h4>
 <hr />
 <div class="row">
@@ -91,13 +99,21 @@
 <div>
     <a href="/yoreservations">Back to List</a>
 </div>
-
+}
+<script>
+    function showNotification(message) {
+        alert(message);
+    }
+</script>
 @code {
+    private bool IsReservationCreated { get; set; } = false;
+
     private List<YoGuest> guests = new List<YoGuest>();
     private List<YoRoom> rooms = new List<YoRoom>();
     private List<YoRoom> availableRooms = new List<YoRoom>();
     private bool IsUser { get; set; } = false;
     private List<string> previousRoomNumbers = new List<string>();
+    private bool IsUserGuest { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -124,8 +140,15 @@
                 }
                 else
                 {
-                    NavigationManager.NavigateTo("/yoguests/create");
+                   // NavigationManager.NavigateTo("/yoguests/create");
                 }
+            }
+
+            if (user != null)
+            {
+                var guest = await DB.YoGuests.FirstOrDefaultAsync(g => g.UserId == user.Id);
+
+                IsUserGuest = guest != null;
             }
             availableRooms = rooms.Where(room => room.RoomStatus != RoomStatus.InUse).ToList();
             if (availableRooms.Any())
@@ -188,6 +211,17 @@
     // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
     public async Task AddYoReservation()
     {
+        var existingReservations = await DB.YoReservations
+        .Where(r => r.RoomNumber == YoReservation.RoomNumber &&
+                    r.CheckOutDate > YoReservation.CheckInDate &&
+                    r.CheckInDate < YoReservation.CheckOutDate)
+        .ToListAsync();
+
+        if (existingReservations.Any())
+        {
+            await JSRuntime.InvokeVoidAsync("showNotification", "This room is already booked for the selected dates.");
+            return;
+        }
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var currentUser = authState.User;
         if (currentUser.Identity != null && currentUser.Identity.IsAuthenticated)
@@ -207,8 +241,11 @@
                 YoReservation.Cost = 0;
             }
             DB.YoReservations.Add(YoReservation);
+            // Обновление статуса комнаты
+            room.RoomStatus = RoomStatus.InUse;
             await DB.SaveChangesAsync();
         }
+        await JSRuntime.InvokeVoidAsync("showNotification", "Reservation created successfully!");
         NavigationManager.NavigateTo("/yoreservations");
     }
 }

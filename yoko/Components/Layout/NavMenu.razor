@@ -4,17 +4,25 @@
 
 <div class="top-row ps-3 navbar navbar-dark custom-top-navbar">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">yoko</a>
+        <a class="navbar-brand" href="">
+            <img src="images/spiral_logo.png" alt="Logo" class="nav-logo" /> Menu
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
     </div>
 </div>
 
 <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 <style>
-    .nav-icon {
-        width: 24px; 
-        height: 24px;
-        margin-right: 8px;
-    }
+
+    /* Стили для логотипа */
+    .nav-logo {
+        width: 25px; /* Ширина логотипа */
+        height: 25px; /* Высота логотипа */
+        margin-right: 5px; /* Отступ справа */
+        vertical-align: middle; /* Вертикальное выравнивание по центру */
+    } 
     /* Изменение фона верхнего навигационного бара */
     .custom-top-navbar {
         background-color: gray; /* Серый фон */
@@ -22,195 +30,210 @@
 
     /* Изменение фона и текста навигационного меню */
     .custom-nav {
-        background-color: #3E6CE2; /* Голубой фон */
+        background: linear-gradient(to bottom, #3E6CE2, #6495ED, #4169E0);
         color: white; /* Белый текст */
-        display: flex;
-        flex-direction: column;
         min-height: 100vh;
     }
 
-        /* Изменение стиля ссылок в навигационном меню */
-        .custom-nav .nav-link {
-            color: white; /* Белый текст */
-            padding: 10px 15px; /* Отступы */
-            display: flex;
-            align-items: center;
-            text-decoration: none; /* Убрать подчеркивание */
-        }
-
     /* Стиль для иконок в навигационном меню */
     .nav-icon {
-        width: 24px; /* Задайте нужную ширину */
-        height: 24px; /* Задайте нужную высоту */
-        margin-right: 8px; /* Отступ справа */
+        width: 20px; /* Задайте нужную ширину */
+        height: 20px; /* Задайте нужную высоту */
+        margin-right: 5px; /* Отступ справа */
     }
 
     /* Стиль для текста в навигационном меню */
     .nav-text {
-        margin-left: 8px; /* Отступ слева для текста */
+        margin-left: 4px; /* Уменьшен отступ слева для текста */
+        font-size: 14px; /* Уменьшен размер текста */
     }
 
-   /* Изменение цвета ссылок при наведении */
-    .custom-nav .nav-link:hover {
-        background-color: #d3d3d3; /* Светло-серый фон при наведении */
-        color: white; /* Белый текст при наведении */
+    /* Уменьшение отступов элементов навигации */
+    .nav-item {
+        padding: 5px 10px; /* Уменьшены внутренние отступы */
     }
 
-    /* Изменение цвета ссылок при нажатии */
-    .custom-nav .nav-link:active {
-        background-color: #a9a9a9; /* Темно-серый фон при нажатии */
-        color: white; /* Белый текст при нажатии */
+    .nav-link {
+        display: flex;
+        align-items: center;
+        padding: 5px 5px; /* Уменьшены внутренние отступы */
+        font-size: 14px; /* Уменьшен размер текста */
+    }
+    /* Стили для скрытия скроллбара */
+    .nav-scrollable {
+        overflow: hidden; /* Скрыть скроллбар по умолчанию */
+    }
+    .nav-scrollable::-webkit-scrollbar {
+        display: none; /* Скрыть скроллбар */
+    }
+    .nav-scrollable {
+        scrollbar-width: none; /* Скрыть скроллбар */
+    }
+    /* Чтобы включить прокрутку при наведении */
+    .nav-scrollable:hover {
+        overflow: auto;
     }
 
+    .sedan-sc-regular {
+        font-family: "Sedan SC", serif;
+        font-weight: 400;
+        font-style: normal;
+    }
 </style>
-<div class="nav-scrollable custom-nav-container" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column custom-nav">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
+<div style="sedan-sc-regular">
+    <div class="nav-scrollable custom-nav-container" onclick="document.querySelector('.navbar-toggler').click()">
+        <nav class="flex-column custom-nav">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                </NavLink>
+            </div>
 
-        @* <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
+            @* <div class="nav-item px-3">
+                <NavLink class="nav-link" href="counter">
+                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
+                </NavLink>
+            </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div> *@
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="weather">
+                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
+                </NavLink>
+            </div> *@
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="auth">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Auth Required
-            </NavLink>
-        </div>
-        <AuthorizeView Roles="user">
-            <Authorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="guestorders">
-                        <img src="images/iconorderservice1.png" alt="GuestOrder Icon" class="nav-icon" />
-                        <span class="nav-text"></span> GuestOrders
-                    </NavLink>
-                </div>
-            </Authorized>
-        </AuthorizeView>
-        <AuthorizeView Roles="user, employee, Admin">
-            <Authorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="yoguests">
-                        <img src="images/iconclient2.png" alt="Guest Icon" class="nav-icon" />
-                        <span class="nav-text">Guests</span>
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="yoreservations">
-                        <img src="images/iconcheckin2.png" alt="Reservation Icon" class="nav-icon" />
-                        <span class="nav-text"></span> Reservations
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="yorooms">
-                        <img src="images/icondoor1.png" alt="Room Icon" class="nav-icon" />
-                        <span class="nav-text"></span> Rooms
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="yoservices">
-                        <img src="images/iconguestorder1.png" alt="Service Icon" class="nav-icon" />
-                        <span class="nav-text"></span> Services
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="yofeedbacks">
-                        <img src="images/iconfeedback2.png" alt="Feedback Icon" class="nav-icon" />
-                        <span class="nav-text"></span> Feedbacks
-                    </NavLink>
-                </div>
-                    
-            </Authorized>
-        </AuthorizeView>
-        <AuthorizeView Roles="employee">
-            <Authorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="employeeorders">
-                        <img src="images/iconorderservice2.png" alt="EOrder Icon" class="nav-icon" />
-                        <span class="nav-text"></span> EOrders
-                    </NavLink>
-                </div>
-            </Authorized>
-        </AuthorizeView>
-        <AuthorizeView Roles="Admin">
-            <Authorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="yoserviceinorders">
-                        <img src="images/iconservice3.png" alt="ServiceInOrder Icon" class="nav-icon" />
-                        <span class="nav-text"></span> ServiceInOrders
-                    </NavLink>
-                </div>
-                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="yonotifications">
-                        <img src="images/iconnotification2.png" alt="Notification Icon" class="nav-icon" />
-                        <span class="nav-text"></span> Notifications
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="yoorders">
-                        <img src="images/iconservice2.png" alt="Order Icon" class="nav-icon" />
-                        <span class="nav-text"></span> Orders
-                    </NavLink>
-                </div>      
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="yoroles">
-                        <img src="images/iconrole1.png" alt="Role Icon" class="nav-icon" />
-                        <span class="nav-text"></span> Roles
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="yousers">
-                        <img src="images/iconrole2.png" alt="User Icon" class="nav-icon" />
-                        <span class="nav-text"></span> Users
-                    </NavLink>
-                </div>
-            </Authorized>
-        </AuthorizeView>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="auth">
+                    <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Auth Required
+                </NavLink>
+            </div>
+            <AuthorizeView Roles="user">
+                <Authorized>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="guestorders">
+                            <img src="images/iconorderservice1.png" alt="GuestOrder Icon" class="nav-icon" />
+                            <span class="nav-text"></span> GuestOrders
+                        </NavLink>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
+            <AuthorizeView Roles="user, employee, Admin">
+                <Authorized>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="yoguests">
+                            <img src="images/iconclient2.png" alt="Guest Icon" class="nav-icon" />
+                            <span class="nav-text">Guests</span>
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="yoreservations">
+                            <img src="images/iconcheckin2.png" alt="Reservation Icon" class="nav-icon" />
+                            <span class="nav-text"></span> Reservations
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="yorooms">
+                            <img src="images/icondoor1.png" alt="Room Icon" class="nav-icon" />
+                            <span class="nav-text"></span> Rooms
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="yoservices">
+                            <img src="images/iconguestorder1.png" alt="Service Icon" class="nav-icon" />
+                            <span class="nav-text"></span> Services
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="yofeedbacks">
+                            <img src="images/iconfeedback2.png" alt="Feedback Icon" class="nav-icon" />
+                            <span class="nav-text"></span> Feedbacks
+                        </NavLink>
+                    </div>
+                    @* <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="settings">
+                            <img src="images/iconfeedback2.png" alt="Feedback Icon" class="nav-icon" />
+                            <span class="nav-text"></span> Settings
+                        </NavLink>
+                    </div> *@
+                </Authorized>
+            </AuthorizeView>
+            <AuthorizeView Roles="employee">
+                <Authorized>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="employeeorders">
+                            <img src="images/iconorderservice2.png" alt="EOrder Icon" class="nav-icon" />
+                            <span class="nav-text"></span> EOrders
+                        </NavLink>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="yoserviceinorders">
+                            <img src="images/iconservice3.png" alt="ServiceInOrder Icon" class="nav-icon" />
+                            <span class="nav-text"></span> ServiceInOrders
+                        </NavLink>
+                    </div>
+                     <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="yonotifications">
+                            <img src="images/iconnotification2.png" alt="Notification Icon" class="nav-icon" />
+                            <span class="nav-text"></span> Notifications
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="yoorders">
+                            <img src="images/iconservice2.png" alt="Order Icon" class="nav-icon" />
+                            <span class="nav-text"></span> Orders
+                        </NavLink>
+                    </div>      
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="yoroles">
+                            <img src="images/iconrole1.png" alt="Role Icon" class="nav-icon" />
+                            <span class="nav-text"></span> Roles
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="yousers">
+                            <img src="images/iconrole2.png" alt="User Icon" class="nav-icon" />
+                            <span class="nav-text"></span> Users
+                        </NavLink>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
 
-        <AuthorizeView>
-            <Authorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Manage">
-                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <form action="Account/Logout" method="post">
-                        <AntiforgeryToken />
-                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                        <button type="submit" class="nav-link">
-                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
-                        </button>
-                    </form>
-                </div>
-            </Authorized>
-            <NotAuthorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Register">
-                        <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Login">
-                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
-                    </NavLink>
-                </div>
-            </NotAuthorized>
-        </AuthorizeView>
-    </nav>
+            <AuthorizeView>
+                <Authorized>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="Account/Manage">
+                            <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <form action="Account/Logout" method="post">
+                            <AntiforgeryToken />
+                            <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                            <button type="submit" class="nav-link">
+                                <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
+                            </button>
+                        </form>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="Account/Register">
+                            <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="Account/Login">
+                            <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
+                        </NavLink>
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
+        </nav>
+    </div>
 </div>
-
 @code {
     private string? currentUrl;
 

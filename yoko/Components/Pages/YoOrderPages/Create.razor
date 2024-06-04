@@ -5,6 +5,9 @@
 @inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<ApplicationUser> UserManager
+@inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
 
 <PageTitle>Create</PageTitle>
 
@@ -18,9 +21,9 @@
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" />
             <div class="mb-3">
-                <label for="orderdate" class="form-label">OrderDate:</label> 
+                <label for="orderdate" class="form-label">OrderDate:</label>
                 <InputDate id="orderdate" @bind-Value="YoOrder.OrderDate" class="form-control" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
-                <ValidationMessage For="() => YoOrder.OrderDate" class="text-danger" /> 
+                <ValidationMessage For="() => YoOrder.OrderDate" class="text-danger" />
             </div>
             <div class="mb-3">
                 <label for="reservationid" class="form-label">ReservationId:</label>
@@ -52,11 +55,6 @@
                 </InputSelect>
                 <ValidationMessage For="() => YoOrder.NotificationId" class="text-danger" />
             </div>
-          @*   <div class="mb-3">
-                <label for="employeeid" class="form-label">EmployeeId:</label> 
-                <InputText id="employeeid" @bind-Value="YoOrder.EmployeeId" class="form-control" /> 
-                <ValidationMessage For="() => YoOrder.EmployeeId" class="text-danger" /> 
-            </div> *@   
             <div class="mb-3">
                 <label for="employeeid" class="form-label">EmployeeId:</label>
                 <InputSelect id="employeeid" @bind-Value="YoOrder.EmployeeId" class="form-select">
@@ -68,10 +66,17 @@
                 <ValidationMessage For="() => YoOrder.EmployeeId" class="text-danger" />
             </div>
             <div class="mb-3">
-                <label for="cost" class="form-label">Cost:</label> 
-                <InputNumber id="cost" @bind-Value="YoOrder.Cost" class="form-control" min="0"/>
-                <ValidationMessage For="() => YoOrder.Cost" class="text-danger" /> 
-            </div>        
+                <label class="form-label" style="font-size: 24px;">Select Services:</label>
+                @foreach (var service in services)
+                {
+                    <div class="form-check">
+                        <input id="@service.Id" type="checkbox" checked="@IsServiceSelected[service.Id]" @onchange="e => ToggleServiceSelection(service.Id)" class="form-check-input" />
+                        <label class="form-check-label" for="@service.Id">@service.Name - $@service.Cost</label>
+                    </div>
+                }
+            </div>
+            <p>Selected Services Count: @SelectedServicesCount</p>
+            <p>Total Order Cost: $@TotalOrderCost</p>
             <button type="submit" class="btn btn-primary">Create</button>
         </EditForm>
     </div>
@@ -80,24 +85,31 @@
 <div>
     <a href="/yoorders">Back to List</a>
 </div>
+<script>
+    function showNotification(message) {
+        alert(message);
+    }
+</script>
 
 @code {
     private List<YoReservation> reservations = new List<YoReservation>();
     private List<YoNotification> notifications = new List<YoNotification>();
     private List<ApplicationUser> users = new List<ApplicationUser>();
     private List<ApplicationUser> employeeUsers = new List<ApplicationUser>();
+    private List<YoService> services = new List<YoService>();
+    private Dictionary<int, bool> IsServiceSelected { get; set; } = new Dictionary<int, bool>();
+    private int SelectedServicesCount { get; set; }
+    private double TotalOrderCost { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-
         // Получаем список резерваций
         reservations = DB.YoReservations.ToList();
         // Получаем список уведомлений
         notifications = DB.YoNotifications.ToList();
-        // // Получаем список пользователей
-        // var allUsers = UserManager.Users.ToList();
-        // users.AddRange(allUsers);
+        // Устанавливаем текущую дату
         YoOrder.OrderDate = DateTime.Now;
+
         // Retrieve users with "employee" role
         var allUsers = await UserManager.Users.ToListAsync();
         foreach (var user in allUsers)
@@ -107,16 +119,119 @@
                 employeeUsers.Add(user);
             }
         }
+
+        // Получаем список услуг
+        services = DB.YoServices.ToList();
+
+        // Инициализируем словарь для отслеживания выбранных услуг
+        foreach (var service in services)
+        {
+            IsServiceSelected[service.Id] = false;
+        }
+
+        UpdateSelectedServicesCount();
+        UpdateTotalOrderCost();
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var currentUser = authState.User;
+        if (currentUser.Identity != null && currentUser.Identity.IsAuthenticated)
+        {
+            var user = await UserManager.GetUserAsync(currentUser);
+            if (user != null)
+            {
+                YoOrder.EmployeeId = user.Id;
+            }
+        }
+    }
+
+    private void ToggleServiceSelection(int serviceId)
+    {
+        IsServiceSelected[serviceId] = !IsServiceSelected[serviceId];
+        UpdateTotalOrderCost();
+        UpdateSelectedServicesCount();
+    }
+
+    private void UpdateSelectedServicesCount()
+    {
+        SelectedServicesCount = IsServiceSelected.Count(kvp => kvp.Value);
+    }
+
+    private void UpdateTotalOrderCost()
+    {
+        TotalOrderCost = 0;
+        foreach (var kvp in IsServiceSelected)
+        {
+            if (kvp.Value)
+            {
+                var selectedService = services.FirstOrDefault(s => s.Id == kvp.Key);
+                if (selectedService != null)
+                {
+                    TotalOrderCost += selectedService.Cost;
+                }
+            }
+        }
     }
 
     [SupplyParameterFromForm]
     public YoOrder YoOrder { get; set; } = new();
 
     // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
-    public async Task AddYoOrder()
+    private async Task AddYoOrder()
     {
-        DB.YoOrders.Add(YoOrder);
-        await DB.SaveChangesAsync();
-        NavigationManager.NavigateTo("/yoorders");
+        try
+        {
+            var yoOrder = new YoOrder
+                {
+                    OrderDate = YoOrder.OrderDate,
+                    ReservationId = YoOrder.ReservationId,
+                    OrderStatus = YoOrder.OrderStatus,
+                    NotificationId = YoOrder.NotificationId,
+                    EmployeeId = YoOrder.EmployeeId,
+                    Cost = TotalOrderCost
+                };
+
+            DB.YoOrders.Add(yoOrder);
+            await DB.SaveChangesAsync();
+
+            foreach (var kvp in IsServiceSelected)
+            {
+                if (kvp.Value)
+                {
+                    var selectedService = services.FirstOrDefault(s => s.Id == kvp.Key);
+                    if (selectedService != null)
+                    {
+                        var serviceInOrder = new YoServiceinOrder
+                            {
+                                ServiceId = selectedService.Id,
+                                OrderId = yoOrder.Id,
+                                Amount = 1
+                            };
+                        DB.YoServiceinOrders.Add(serviceInOrder);
+                    }
+                }
+            }
+
+            await DB.SaveChangesAsync();
+
+            // Create notification
+            var notification = new YoNotification
+                {
+                    OrderId = yoOrder.Id,
+                    NotificationDateTime = DateTime.Now,
+                    NotificationText = $"New order created with ID {yoOrder.Id}"
+                };
+            DB.YoNotifications.Add(notification);
+            await DB.SaveChangesAsync();
+
+            // Show popup notification
+            await JSRuntime.InvokeVoidAsync("showNotification", $"New order created with ID {yoOrder.Id}");
+
+            NavigationManager.NavigateTo("/yoorders");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error occurred: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("alert", $"Error occurred: {ex.Message}");
+        }
     }
 }
