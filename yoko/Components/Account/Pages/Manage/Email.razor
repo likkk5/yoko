@@ -16,7 +16,7 @@
 
 <h3>Manage email</h3>
 
-<StatusMessage Message="@message"/>
+<StatusMessage Message="@message" />
 <div class="row">
     <div class="col-md-6">
         <form @onsubmit="OnSendEmailVerificationAsync" @formname="send-verification" id="send-verification-form" method="post">
@@ -50,6 +50,13 @@
             </div>
             <button type="submit" class="w-100 btn btn-lg btn-primary">Change email</button>
         </EditForm>
+        @if (confirmationLink != null)
+        {
+            <div class="alert alert-info mt-3">
+                <p>Click the link below to confirm your email change:</p>
+                <a href="@confirmationLink" class="btn btn-link">Confirm Email Change</a>
+            </div>
+        }
     </div>
 </div>
 
@@ -58,6 +65,7 @@
     private ApplicationUser user = default!;
     private string? email;
     private bool isEmailConfirmed;
+    private string? confirmationLink;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -70,7 +78,7 @@
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
         email = await UserManager.GetEmailAsync(user);
         isEmailConfirmed = await UserManager.IsEmailConfirmedAsync(user);
-        
+
         Input.NewEmail ??= email;
     }
 
@@ -85,13 +93,11 @@
         var userId = await UserManager.GetUserIdAsync(user);
         var code = await UserManager.GenerateChangeEmailTokenAsync(user, Input.NewEmail);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
+        confirmationLink = NavigationManager.GetUriWithQueryParameters(
             NavigationManager.ToAbsoluteUri("Account/ConfirmEmailChange").AbsoluteUri,
             new Dictionary<string, object?> { ["userId"] = userId, ["email"] = Input.NewEmail, ["code"] = code });
 
-        await EmailSender.SendConfirmationLinkAsync(user, Input.NewEmail, HtmlEncoder.Default.Encode(callbackUrl));
-
-        message = "Confirmation link to change email sent. Please check your email.";
+        message = "Confirmation link to change email generated. Click the link below to confirm the email change.";
     }
 
     private async Task OnSendEmailVerificationAsync()
